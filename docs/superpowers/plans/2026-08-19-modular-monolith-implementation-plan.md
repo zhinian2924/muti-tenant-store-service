@@ -128,7 +128,7 @@
 3. 迁移小程序消费者、地址和购物车到 `customer` 模块。
 4. 抽取 `WechatLoginGateway` 和 `ObjectStorage`。
 5. 使用 BCrypt 或 Argon2 替换明文密码处理。
-6. 将生产配置中的敏感值改为环境变量或 Apollo 注入。
+6. 将生产配置中的敏感值改为环境变量或本地配置文件注入。
 
 ### 验证
 

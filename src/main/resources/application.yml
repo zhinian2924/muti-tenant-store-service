@@ -37,13 +37,3 @@ sa-token:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
-
-# Apollo 配置中心引导配置
-apollo:
-  meta: ${APOLLO_META:http://192.168.85.202:8080}
-  cacheDir: ${APOLLO_CACHE_DIR:./.apollo-cache}
-  bootstrap:
-    enabled: ${APOLLO_BOOTSTRAP_ENABLED:true}
-    namespaces: application
-    eagerLoad:
-      enabled: true

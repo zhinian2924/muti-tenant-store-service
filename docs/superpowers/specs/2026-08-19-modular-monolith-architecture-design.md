@@ -2,7 +2,7 @@
 
 ## 1. 背景与目标
 
-当前项目是基于 Spring Boot、MyBatis-Plus、Sa-Token、Redis、Apollo 和 MinIO 的多租户门店 SaaS 单体应用。项目已经按业务域分包，但订单、支付、库存和小程序流程仍然直接依赖跨模块 Mapper，业务规则与基础设施实现耦合较重。
+当前项目是基于 Spring Boot、MyBatis-Plus、Sa-Token、Redis 和 MinIO 的多租户门店 SaaS 单体应用。项目已经按业务域分包，但订单、支付、库存和小程序流程仍然直接依赖跨模块 Mapper，业务规则与基础设施实现耦合较重。
 
 本设计将系统演进为模块化单体，并为未来按业务域拆分微服务保留边界。第一阶段保持单个 Spring Boot 应用和单体数据库，重点保证模块依赖清晰、交易状态一致、租户隔离明确和外部依赖可替换。
 
