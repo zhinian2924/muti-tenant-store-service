@@ -8,12 +8,13 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(BusinessException.class)
     public ApiResponse<Void> handleBusiness(BusinessException ex) {
         return ApiResponse.fail(ex.getCode(), ex.getMessage());
@@ -45,6 +46,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ApiResponse<Void> handleUnknown(Exception ex) {
+        log.error("未处理的请求异常", ex);
         return ApiResponse.fail(ResultCode.INTERNAL_ERROR, "系统异常");
     }
 }

@@ -3,6 +3,7 @@ package com.example.storesaas.identity.auth;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import com.example.storesaas.identity.auth.vo.AccountProfileVO;
 import com.example.storesaas.identity.auth.dto.AccountProfileUpdateDTO;
 import com.example.storesaas.identity.auth.dto.LoginDTO;
@@ -39,6 +40,7 @@ import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@Slf4j
 public class AuthService {
     private static final Duration SMS_CODE_TTL = Duration.ofMinutes(5);// SMS验证码有效期5分钟
     // 商户管理员权限
@@ -104,6 +106,7 @@ public class AuthService {
 
     /**
      * 发送商户短信验证码
+     *
      * @param request 短信验证码请求
      * @return 短信验证码响应
      */
@@ -113,15 +116,17 @@ public class AuthService {
         if (Integer.valueOf(EnableStatus.DISABLED).equals(user.getStatus())) {
             throw new BusinessException("账号已禁用");
         }
+        // 生成并缓存短信验证码
         String code = String.valueOf(ThreadLocalRandom.current().nextInt(AuthRules.SMS_CODE_RANGE_MIN, AuthRules.SMS_CODE_RANGE_MAX));
         stringRedisTemplate.opsForValue().set(RedisKeys.storeSmsCode(request.mobile()), code, SMS_CODE_TTL);
-        System.out.println("SMS Code: " + code);
+        log.debug("商户短信验证码已生成，mobile={}, code={}", request.mobile(), code);
         return new SmsCodeVO(request.mobile(), (int) SMS_CODE_TTL.toSeconds(), code);
     }
 
     /**
      * 登录
-     * @param request 登录请求
+     *
+     * @param request     登录请求
      * @param accountType 账号类型
      * @return 登录响应
      */
@@ -141,6 +146,7 @@ public class AuthService {
 
     /**
      * 获取当前登录用户
+     *
      * @return 当前登录用户
      */
     public AccountProfileVO me() {
@@ -161,6 +167,7 @@ public class AuthService {
 
     /**
      * 商户登录
+     *
      * @param request 登录请求
      * @return 登录响应
      */
@@ -182,6 +189,7 @@ public class AuthService {
 
     /**
      * 确保商户可以登录
+     *
      * @param tenantId 门店ID
      */
     private void ensureTenantCanLogin(Long tenantId) {
@@ -202,7 +210,8 @@ public class AuthService {
 
     /**
      * 平台登录
-     * @param request 登录请求
+     *
+     * @param request     登录请求
      * @param accountType 账号类型
      * @return 登录响应
      */
@@ -223,6 +232,7 @@ public class AuthService {
 
     /**
      * 根据手机号查找门店用户
+     *
      * @param mobile 手机号
      * @return 门店用户
      */
@@ -248,8 +258,9 @@ public class AuthService {
 
     /**
      * 验证短信验证码
+     *
      * @param mobile 手机号
-     * @param code 验证码
+     * @param code   验证码
      */
     private void verifySmsCode(String mobile, String code) {
         if (!hasText(code)) {
@@ -268,6 +279,7 @@ public class AuthService {
 
     /**
      * 生成门店店主用户名
+     *
      * @param tenantId 门店ID
      * @return 店主用户名
      */
@@ -277,6 +289,7 @@ public class AuthService {
 
     /**
      * 生成门店编码
+     *
      * @param storeName 门店名称
      * @return 门店编码
      */
@@ -294,6 +307,7 @@ public class AuthService {
 
     /**
      * 规范化门店编码前缀
+     *
      * @param storeName 门店名称
      * @return 规范化后的前缀
      */
@@ -319,7 +333,8 @@ public class AuthService {
 
     /**
      * 登录
-     * @param user 用户
+     *
+     * @param user        用户
      * @param permissions 权限列表
      * @return 登录响应
      */
