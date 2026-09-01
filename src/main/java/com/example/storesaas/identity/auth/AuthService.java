@@ -50,7 +50,8 @@ public class AuthService {
     private final SysUserMapper sysUserMapper;
     private final StringRedisTemplate stringRedisTemplate;
 
-    public AuthService(TenantMapper tenantMapper, StoreMapper storeMapper, SysUserMapper sysUserMapper, StringRedisTemplate stringRedisTemplate) {
+    public AuthService(TenantMapper tenantMapper, StoreMapper storeMapper, SysUserMapper sysUserMapper,
+                       StringRedisTemplate stringRedisTemplate) {
         this.tenantMapper = tenantMapper;
         this.storeMapper = storeMapper;
         this.sysUserMapper = sysUserMapper;
