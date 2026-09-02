@@ -22,15 +22,15 @@ public class MiniOrderController {
     }
 
     @PostMapping("/preview")
-    public ApiResponse<OrderPreviewVO> preview(@Valid @RequestBody MiniOrderDTO r) {
+    public ApiResponse<OrderPreviewVO> preview(@Valid @RequestBody MiniOrderDTO miniOrderDTO) {
         CustomerContext.current();
-        return ApiResponse.ok(service.preview(r));
+        return ApiResponse.ok(service.preview(miniOrderDTO));
     }
 
     @PostMapping
-    public ApiResponse<MiniOrderVO> create(@Valid @RequestBody MiniOrderDTO r) {
+    public ApiResponse<MiniOrderVO> create(@Valid @RequestBody MiniOrderDTO miniOrderDTO) {
         CustomerContext.current();
-        return ApiResponse.ok(service.create(r));
+        return ApiResponse.ok(service.create(miniOrderDTO));
     }
 
     @GetMapping
