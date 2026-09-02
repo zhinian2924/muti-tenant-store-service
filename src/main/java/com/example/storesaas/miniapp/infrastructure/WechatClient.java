@@ -50,6 +50,11 @@ public class WechatClient {
         }
     }
 
+    /**
+     * 解析微信登录的session信息
+     * @param responseBody 响应信息
+     * @return session信息
+     */
     WechatSession parseResponse(String responseBody) {
         if (responseBody == null || responseBody.isBlank()) {
             throw serviceUnavailable();
@@ -73,11 +78,11 @@ public class WechatClient {
     }
 
     public record WechatSession(
-            String openid,
-            @JsonProperty("session_key") String sessionKey,
-            String unionid,
-            Integer errcode,
-            String errmsg
+            String openid, // 用户在小程序的唯一标识
+            @JsonProperty("session_key") String sessionKey, // 会话密钥
+            String unionid, // 用户在微信的唯一标识
+            Integer errcode, // 错误码
+            String errmsg // 错误信息
     ) {
     }
 }

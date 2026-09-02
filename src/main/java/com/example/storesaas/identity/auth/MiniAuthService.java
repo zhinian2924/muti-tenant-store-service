@@ -17,6 +17,7 @@ import com.example.storesaas.miniapp.MiniappConfigService;
 import com.example.storesaas.identity.security.AccountType;
 import com.example.storesaas.identity.security.LoginUser;
 import com.example.storesaas.identity.auth.dto.MockLoginDTO;
+import com.example.storesaas.tenant.TenantStatus;
 import com.example.storesaas.tenant.entity.Tenant;
 import com.example.storesaas.tenant.mapper.TenantMapper;
 import org.springframework.stereotype.Service;
@@ -51,13 +52,15 @@ public class MiniAuthService {
     @Transactional
     public MiniLoginVO mockLogin(MockLoginDTO request) {
         Tenant tenant = tenantMapper.selectOne(new LambdaQueryWrapper<Tenant>()
-                .eq(Tenant::getId, request.tenantId()).eq(Tenant::getDeleted, 0));
-        if (tenant == null || !Integer.valueOf(com.example.storesaas.tenant.TenantStatus.ACTIVE).equals(tenant.getStatus())) {
+                .eq(Tenant::getId, request.tenantId())
+                .eq(Tenant::getDeleted, 0));
+        if (tenant == null || !Integer.valueOf(TenantStatus.ACTIVE).equals(tenant.getStatus())) {
             throw new BusinessException("门店不存在或未启用");
         }
         return createSession(findOrCreate(request.tenantId(), request.openid()));
     }
 
+    // 根据openId查询或创建消费者
     private Customer findOrCreate(Long tenantId, String openid) {
         Customer customer = customerMapper.selectOne(new LambdaQueryWrapper<Customer>()
                 .eq(Customer::getTenantId, tenantId)
@@ -76,6 +79,7 @@ public class MiniAuthService {
         return customer;
     }
 
+    // 创建会话
     private MiniLoginVO createSession(Customer c) {
         StpUtil.login("CUSTOMER:" + c.getId());
         StpUtil.getSession().set("loginUser", new LoginUser(c.getId(), c.getTenantId(), AccountType.CUSTOMER,
@@ -85,6 +89,7 @@ public class MiniAuthService {
                 c.getNickname(), c.getAvatarUrl());
     }
 
+    // 填充公共字段
     private void fill(Customer c) {
         var n = LocalDateTime.now();
         c.setCreatedAt(n);
