@@ -161,12 +161,11 @@ public class ProductService implements ProductReader {
 
     public void deleteProduct(Long id) {
         Product product = tenantProduct(AuthContext.tenantId(), id);
-        product.setDeleted(DeleteStatus.DELETED);
-        product.setUpdatedAt(LocalDateTime.now());
-        productMapper.updateById(product);
+        productMapper.deleteById(product.getId());
         storageService.deleteUrl(product.getImageUrl());
     }
 
+    // 根据租户和商品ID获取商品
     public Product tenantProduct(Long tenantId, Long productId) {
         Product product = productMapper.selectOne(new LambdaQueryWrapper<Product>()
                 .eq(Product::getTenantId, tenantId)
@@ -178,6 +177,7 @@ public class ProductService implements ProductReader {
         return product;
     }
 
+    // 根据租户和商品ID获取商品快照
     @Override
     public ProductSnapshot getTenantProduct(Long tenantId, Long productId) {
         Product product = tenantProduct(tenantId, productId);
@@ -192,6 +192,7 @@ public class ProductService implements ProductReader {
         );
     }
 
+    // 规范商品状态
     private int normalizeProductStatus(Integer status, Integer stock) {
         int nextStatus = status == null ? ProductStatus.ON_SALE : status;
         if (!ProductStatus.valid(nextStatus)) {

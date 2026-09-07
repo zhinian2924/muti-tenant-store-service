@@ -66,11 +66,10 @@ public class CartService {
     @Transactional
     public void remove(Long productId) {
         CartItem item = owned(productId);
-        item.setDeleted(DeleteStatus.DELETED);
-        item.setUpdatedAt(LocalDateTime.now());
-        mapper.updateById(item);
+        mapper.deleteById(item.getId());
     }
 
+    // 查询购物车商品
     private CartItem owned(Long productId) {
         CartItem item = mapper.selectOne(query().eq(CartItem::getProductId, productId));
         if (item == null) throw new BusinessException("购物车商品不存在");
@@ -78,9 +77,12 @@ public class CartService {
     }
 
     private LambdaQueryWrapper<CartItem> query() {
-        return new LambdaQueryWrapper<CartItem>().eq(CartItem::getTenantId, CustomerContext.tenantId()).eq(CartItem::getCustomerId, CustomerContext.customerId()).eq(CartItem::getDeleted, DeleteStatus.NOT_DELETED);
+        return new LambdaQueryWrapper<CartItem>().eq(CartItem::getTenantId,
+                CustomerContext.tenantId()).eq(CartItem::getCustomerId,
+                CustomerContext.customerId()).eq(CartItem::getDeleted, DeleteStatus.NOT_DELETED);
     }
 
+    // 填充商品信息
     private void fill(CartItem item) {
         LocalDateTime now = LocalDateTime.now();
         item.setCreatedAt(now);
