@@ -1,6 +1,7 @@
 package com.example.storesaas.customer.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.storesaas.platform.error.BusinessException;
 import com.example.storesaas.platform.persistence.DeleteStatus;
 import com.example.storesaas.customer.CustomerContext;
@@ -23,20 +24,22 @@ public class AddressService {
     }
 
     public List<AddressVO> list() {
-        return mapper.selectList(query().orderByDesc(CustomerAddress::getIsDefault).orderByDesc(CustomerAddress::getId))
+        return mapper.selectList(
+                        query().orderByDesc(CustomerAddress::getIsDefault).orderByDesc(CustomerAddress::getId))
                 .stream().map(AddressVO::from).toList();
     }
 
     @Transactional
-    public AddressVO create(AddressDTO r) {
-        CustomerAddress a = new CustomerAddress();
-        copy(a, r);
-        a.setTenantId(CustomerContext.tenantId());
-        a.setCustomerId(CustomerContext.customerId());
-        fill(a);
-        if (Boolean.TRUE.equals(r.isDefault()) || list().isEmpty()) makeDefault(a);
-        mapper.insert(a);
-        return AddressVO.from(a);
+    public AddressVO create(AddressDTO addressDTO) {
+        CustomerAddress customerAddress = new CustomerAddress();
+        copy(customerAddress, addressDTO);
+        customerAddress.setTenantId(CustomerContext.tenantId());
+        customerAddress.setCustomerId(CustomerContext.customerId());
+        fill(customerAddress);
+        // 设置默认地址
+        if (Boolean.TRUE.equals(addressDTO.isDefault()) || list().isEmpty()) makeDefault(customerAddress);
+        mapper.insert(customerAddress);
+        return AddressVO.from(customerAddress);
     }
 
     @Transactional
@@ -66,34 +69,41 @@ public class AddressService {
     }
 
     private CustomerAddress owned(Long id) {
-        CustomerAddress a = mapper.selectOne(query().eq(CustomerAddress::getId, id));
-        if (a == null) throw new BusinessException("地址不存在");
-        return a;
+        CustomerAddress customerAddress = mapper.selectOne(query().eq(CustomerAddress::getId, id));
+        if (customerAddress == null) throw new BusinessException("地址不存在");
+        return customerAddress;
     }
 
     private LambdaQueryWrapper<CustomerAddress> query() {
-        return new LambdaQueryWrapper<CustomerAddress>().eq(CustomerAddress::getTenantId, CustomerContext.tenantId()).eq(CustomerAddress::getCustomerId, CustomerContext.customerId()).eq(CustomerAddress::getDeleted, DeleteStatus.NOT_DELETED);
+        return new LambdaQueryWrapper<CustomerAddress>()
+                .eq(CustomerAddress::getTenantId, CustomerContext.tenantId())
+                .eq(CustomerAddress::getCustomerId, CustomerContext.customerId())
+                .eq(CustomerAddress::getDeleted, DeleteStatus.NOT_DELETED);
     }
 
-    private void copy(CustomerAddress a, AddressDTO r) {
-        a.setConsignee(r.consignee());
-        a.setPhone(r.phone());
-        a.setProvince(r.province());
-        a.setCity(r.city());
-        a.setDistrict(r.district());
-        a.setDetail(r.detail());
-        a.setIsDefault(Boolean.TRUE.equals(r.isDefault()) ? 1 : 0);
+    private void copy(CustomerAddress customerAddress, AddressDTO addressDTO) {
+        customerAddress.setConsignee(addressDTO.consignee());
+        customerAddress.setPhone(addressDTO.phone());
+        customerAddress.setProvince(addressDTO.province());
+        customerAddress.setCity(addressDTO.city());
+        customerAddress.setDistrict(addressDTO.district());
+        customerAddress.setDetail(addressDTO.detail());
+        customerAddress.setIsDefault(Boolean.TRUE.equals(addressDTO.isDefault()) ? 1 : 0);
     }
 
-    private void fill(CustomerAddress a) {
-        LocalDateTime n = LocalDateTime.now();
-        a.setCreatedAt(n);
-        a.setUpdatedAt(n);
-        a.setDeleted(DeleteStatus.NOT_DELETED);
+    private void fill(CustomerAddress customerAddress) {
+        LocalDateTime now = LocalDateTime.now();
+        customerAddress.setCreatedAt(now);
+        customerAddress.setUpdatedAt(now);
+        customerAddress.setDeleted(DeleteStatus.NOT_DELETED);
     }
 
-    private void makeDefault(CustomerAddress a) {
-        mapper.update(null, new com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper<CustomerAddress>().eq(CustomerAddress::getTenantId, CustomerContext.tenantId()).eq(CustomerAddress::getCustomerId, CustomerContext.customerId()).eq(CustomerAddress::getDeleted, DeleteStatus.NOT_DELETED).set(CustomerAddress::getIsDefault, 0));
-        a.setIsDefault(1);
+    private void makeDefault(CustomerAddress customerAddress) {
+        mapper.update(null, new LambdaUpdateWrapper<CustomerAddress>()
+                .eq(CustomerAddress::getTenantId, CustomerContext.tenantId())
+                .eq(CustomerAddress::getCustomerId, CustomerContext.customerId())
+                .eq(CustomerAddress::getDeleted, DeleteStatus.NOT_DELETED)
+                .set(CustomerAddress::getIsDefault, 0));
+        customerAddress.setIsDefault(1);
     }
 }

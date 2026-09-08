@@ -25,10 +25,10 @@ public class AddressController {
         return ApiResponse.ok(service.list());
     }
 
-    @PostMapping
-    public ApiResponse<AddressVO> create(@Valid @RequestBody AddressDTO r) {
+    @PostMapping("/add")
+    public ApiResponse<AddressVO> create(@Valid @RequestBody AddressDTO addressDTO) {
         CustomerContext.current();
-        return ApiResponse.ok(service.create(r));
+        return ApiResponse.ok(service.create(addressDTO));
     }
 
     @PutMapping("/{id}")

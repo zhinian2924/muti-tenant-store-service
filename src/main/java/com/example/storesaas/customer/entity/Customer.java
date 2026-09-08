@@ -9,9 +9,9 @@ import lombok.EqualsAndHashCode;
 @TableName("biz_customer")
 @Data
 public class Customer extends BaseEntity {
-    private Long tenantId;
-    private String openid;
-    private String nickname;
-    private String avatarUrl;
-    private Integer status;
+    private Long tenantId;// 租户ID
+    private String openid;// 开放平台ID
+    private String nickname;// 昵称
+    private String avatarUrl;// 头像
+    private Integer status;// 状态
 }
