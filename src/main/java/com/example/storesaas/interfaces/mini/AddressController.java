@@ -32,7 +32,8 @@ public class AddressController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<AddressVO> update(@PathVariable Long id, @Valid @RequestBody AddressDTO r) {
+    public ApiResponse<AddressVO> update(@PathVariable Long id,
+                                         @Valid @RequestBody AddressDTO r) {
         CustomerContext.current();
         return ApiResponse.ok(service.update(id, r));
     }

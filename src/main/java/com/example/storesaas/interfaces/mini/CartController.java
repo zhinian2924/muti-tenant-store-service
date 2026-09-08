@@ -26,13 +26,15 @@ public class CartController {
     }
 
     @PostMapping("/{productId}")
-    public ApiResponse<CartItemVO> add(@PathVariable Long productId, @Valid @RequestBody CartItemDTO request) {
+    public ApiResponse<CartItemVO> add(@PathVariable Long productId,
+                                       @Valid @RequestBody CartItemDTO request) {
         CustomerContext.current();
         return ApiResponse.ok(service.add(productId, request));
     }
 
     @PutMapping("/{productId}")
-    public ApiResponse<CartItemVO> update(@PathVariable Long productId, @Valid @RequestBody CartItemDTO request) {
+    public ApiResponse<CartItemVO> update(@PathVariable Long productId,
+                                          @Valid @RequestBody CartItemDTO request) {
         CustomerContext.current();
         return ApiResponse.ok(service.update(productId, request));
     }

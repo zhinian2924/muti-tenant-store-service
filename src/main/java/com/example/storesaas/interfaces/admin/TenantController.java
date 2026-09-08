@@ -37,14 +37,16 @@ public class TenantController {
 
     @SaCheckPermission(Permissions.TENANT_UPDATE)
     @PutMapping("/{id}")
-    public ApiResponse<Void> update(@PathVariable Long id, @Valid @RequestBody TenantUpdateDTO request) {
+    public ApiResponse<Void> update(@PathVariable Long id,
+                                    @Valid @RequestBody TenantUpdateDTO request) {
         tenantService.update(id, request);
         return ApiResponse.ok();
     }
 
     @SaCheckPermission(Permissions.TENANT_UPDATE)
     @PutMapping("/{id}/status")
-    public ApiResponse<Void> setStatus(@PathVariable Long id, @Valid @RequestBody TenantStatusDTO request) {
+    public ApiResponse<Void> setStatus(@PathVariable Long id,
+                                       @Valid @RequestBody TenantStatusDTO request) {
         tenantService.setStatus(id, request.status());
         return ApiResponse.ok();
     }

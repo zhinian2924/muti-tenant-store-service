@@ -37,7 +37,8 @@ public class MiniPublicController {
     }
 
     @GetMapping("/products")
-    public ApiResponse<List<PublicProductVO>> products(@RequestParam String appId, @RequestParam(required = false) Long categoryId) {
+    public ApiResponse<List<PublicProductVO>> products(@RequestParam String appId,
+                                                       @RequestParam(required = false) Long categoryId) {
         Long tenantId = tenantId(appId);
         return ApiResponse.ok(products.publicProducts(tenantId, categoryId));
     }

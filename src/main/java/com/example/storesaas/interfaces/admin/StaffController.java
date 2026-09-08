@@ -42,13 +42,15 @@ public class StaffController {
 
     @SaCheckPermission(Permissions.STAFF_UPDATE)
     @PutMapping("/{id}")
-    public ApiResponse<StaffVO> update(@PathVariable Long id, @Valid @RequestBody StaffUpdateDTO request) {
+    public ApiResponse<StaffVO> update(@PathVariable Long id,
+                                       @Valid @RequestBody StaffUpdateDTO request) {
         return ApiResponse.ok(staffService.update(id, request));
     }
 
     @SaCheckPermission(Permissions.STAFF_DISABLE)
     @PutMapping("/{id}/status")
-    public ApiResponse<StaffVO> setStatus(@PathVariable Long id, @Valid @RequestBody StaffStatusDTO request) {
+    public ApiResponse<StaffVO> setStatus(@PathVariable Long id,
+                                          @Valid @RequestBody StaffStatusDTO request) {
         return ApiResponse.ok(staffService.setStatus(id, request.status()));
     }
 }

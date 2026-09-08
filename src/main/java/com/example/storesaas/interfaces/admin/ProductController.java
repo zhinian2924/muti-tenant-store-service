@@ -50,19 +50,22 @@ public class ProductController {
 
     @SaCheckPermission(Permissions.PRODUCT_UPDATE)
     @PutMapping("/products/{id}")
-    public ApiResponse<ProductVO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductDTO request) {
+    public ApiResponse<ProductVO> updateProduct(@PathVariable Long id,
+                                                @Valid @RequestBody ProductDTO request) {
         return ApiResponse.ok(productService.updateProduct(id, request));
     }
 
     @SaCheckPermission(Permissions.PRODUCT_UPDATE)
     @PutMapping("/products/{id}/status")
-    public ApiResponse<ProductVO> updateProductStatus(@PathVariable Long id, @Valid @RequestBody ProductStatusDTO request) {
+    public ApiResponse<ProductVO> updateProductStatus(@PathVariable Long id,
+                                                      @Valid @RequestBody ProductStatusDTO request) {
         return ApiResponse.ok(productService.setProductStatus(id, request.status()));
     }
 
     @SaCheckPermission(Permissions.PRODUCT_UPDATE)
     @PutMapping("/categories/{id}/status")
-    public ApiResponse<CategoryVO> updateCategoryStatus(@PathVariable Long id, @Valid @RequestBody CategoryStatusDTO request) {
+    public ApiResponse<CategoryVO> updateCategoryStatus(@PathVariable Long id,
+                                                        @Valid @RequestBody CategoryStatusDTO request) {
         return ApiResponse.ok(productService.setCategoryStatus(id, request.status()));
     }
 

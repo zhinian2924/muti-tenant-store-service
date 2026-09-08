@@ -28,14 +28,14 @@ public class MiniappConfigController {
     @SaCheckPermission(Permissions.TENANT_UPDATE)
     @PutMapping
     public ApiResponse<MiniappConfigVO> save(@PathVariable Long tenantId,
-                                                   @Valid @RequestBody MiniappConfigDTO request) {
+                                             @Valid @RequestBody MiniappConfigDTO request) {
         return ApiResponse.ok(service.save(tenantId, request));
     }
 
     @SaCheckPermission(Permissions.TENANT_UPDATE)
     @PutMapping("/status")
     public ApiResponse<MiniappConfigVO> setStatus(@PathVariable Long tenantId,
-                                                        @Valid @RequestBody MiniappConfigStatusDTO request) {
+                                                  @Valid @RequestBody MiniappConfigStatusDTO request) {
         return ApiResponse.ok(service.setStatus(tenantId, request.status()));
     }
 }
