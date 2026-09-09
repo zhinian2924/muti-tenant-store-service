@@ -1,21 +1,24 @@
 package com.example.storesaas.customer.vo;
 
 import com.example.storesaas.customer.entity.CartItem;
+import com.example.storesaas.catalog.entity.Product;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 购物车项VO
+ *
  * @param id
  * @param createdAt
  * @param updatedAt
  * @param deleted
- * @param tenantId 租户ID
- * @param customerId 客户ID
- * @param productId 商品ID
- * @param quantity 购物车项数量
- * @param price 商品价格
+ * @param tenantId
+ * @param customerId
+ * @param productId
+ * @param productName
+ * @param imageUrl
+ * @param quantity
+ * @param price
  */
 public record CartItemVO(
         Long id,
@@ -25,10 +28,16 @@ public record CartItemVO(
         Long tenantId,
         Long customerId,
         Long productId,
+        String productName,
+        String imageUrl,
         Integer quantity,
         BigDecimal price
 ) {
     public static CartItemVO from(CartItem item) {
+        return from(item, null);
+    }
+
+    public static CartItemVO from(CartItem item, Product product) {
         return new CartItemVO(
                 item.getId(),
                 item.getCreatedAt(),
@@ -37,6 +46,8 @@ public record CartItemVO(
                 item.getTenantId(),
                 item.getCustomerId(),
                 item.getProductId(),
+                product == null ? null : product.getName(),
+                product == null ? null : product.getImageUrl(),
                 item.getQuantity(),
                 item.getPrice());
     }

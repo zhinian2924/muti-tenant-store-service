@@ -27,7 +27,10 @@ public class CartService {
     }
 
     public List<CartItemVO> list() {
-        return mapper.selectList(query()).stream().map(CartItemVO::from).toList();
+        Long tenantId = CustomerContext.tenantId();
+        return mapper.selectList(query()).stream()
+                .map(item -> CartItemVO.from(item, products.tenantProduct(tenantId, item.getProductId())))
+                .toList();
     }
 
     @Transactional
@@ -44,16 +47,17 @@ public class CartService {
         fill(item);
         mapper.upsert(item);
         item = mapper.selectOne(query().eq(CartItem::getProductId, productId));
-        return CartItemVO.from(item);
+        return CartItemVO.from(item, product);
     }
 
     @Transactional
     public CartItemVO update(Long productId, CartItemDTO request) {
         CartItem item = owned(productId);
+        Product product = products.tenantProduct(CustomerContext.tenantId(), productId);
         item.setQuantity(request.quantity());
         item.setUpdatedAt(LocalDateTime.now());
         mapper.updateById(item);
-        return CartItemVO.from(item);
+        return CartItemVO.from(item, product);
     }
 
     @Transactional
