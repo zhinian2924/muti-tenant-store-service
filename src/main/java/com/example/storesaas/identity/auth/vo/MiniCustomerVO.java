@@ -6,6 +6,16 @@ import com.example.storesaas.customer.vo.CustomerProfileVO;
 
 import java.util.List;
 
+/**
+ * @param userId 用户ID
+ * @param tenantId 租户ID
+ * @param accountType 账号类型
+ * @param username 用户名
+ * @param staffRole 员工角色
+ * @param permissions 权限列表
+ * @param nickname 昵称
+ * @param avatarUrl 头像地址
+ */
 public record MiniCustomerVO(
         Long userId,
         Long tenantId,

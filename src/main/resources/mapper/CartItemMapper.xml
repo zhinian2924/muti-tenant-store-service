@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.storesaas.customer.mapper.CartItemMapper">
+
+    <insert id="upsert" parameterType="com.example.storesaas.customer.entity.CartItem">
+        INSERT INTO biz_cart_item
+            (tenant_id, customer_id, product_id, quantity, price, created_at, updated_at, deleted)
+        VALUES
+            (#{tenantId}, #{customerId}, #{productId}, #{quantity}, #{price}, #{createdAt}, #{updatedAt}, #{deleted})
+        ON DUPLICATE KEY UPDATE
+            quantity = IF(deleted = 1, VALUES(quantity), quantity + VALUES(quantity)),
+            price = VALUES(price),
+            updated_at = VALUES(updated_at),
+            deleted = 0
+    </insert>
+</mapper>

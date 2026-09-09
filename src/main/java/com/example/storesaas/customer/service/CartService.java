@@ -35,22 +35,15 @@ public class CartService {
         Long tenantId = CustomerContext.tenantId();
         Product product = products.tenantProduct(tenantId, productId);
         if (product.getStatus() == null || product.getStatus() != 1) throw new BusinessException("商品当前不可购买");
-        CartItem item = mapper.selectOne(query().eq(CartItem::getProductId, productId));
-        if (item == null) {
-            item = new CartItem();
-            item.setTenantId(tenantId);
-            item.setCustomerId(CustomerContext.customerId());
-            item.setProductId(productId);
-            item.setQuantity(request.quantity());
-            item.setPrice(product.getPrice());
-            fill(item);
-            mapper.insert(item);
-        } else {
-            item.setQuantity(item.getQuantity() + request.quantity());
-            item.setPrice(product.getPrice());
-            item.setUpdatedAt(LocalDateTime.now());
-            mapper.updateById(item);
-        }
+        CartItem item = new CartItem();
+        item.setTenantId(tenantId);
+        item.setCustomerId(CustomerContext.customerId());
+        item.setProductId(productId);
+        item.setQuantity(request.quantity());
+        item.setPrice(product.getPrice());
+        fill(item);
+        mapper.upsert(item);
+        item = mapper.selectOne(query().eq(CartItem::getProductId, productId));
         return CartItemVO.from(item);
     }
 
