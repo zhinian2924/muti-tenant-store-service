@@ -25,9 +25,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.security.SecureRandom;
 
 @Service
 public class MiniAuthService {
+    private static final String NICKNAME_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final SecureRandom RANDOM = new SecureRandom();
     private final CustomerMapper customerMapper;
     private final TenantMapper tenantMapper;
     private final MiniappConfigService configService;
@@ -70,6 +73,7 @@ public class MiniAuthService {
             customer = new Customer();
             customer.setTenantId(tenantId);
             customer.setOpenid(openid);
+            customer.setNickname(randomNickname());
             customer.setStatus(EnableStatus.ENABLED);
             fill(customer);
             customerMapper.insert(customer);
@@ -77,6 +81,15 @@ public class MiniAuthService {
             throw new BusinessException(ResultCode.FORBIDDEN, "消费者账号已停用");
         }
         return customer;
+    }
+
+    // 生成随机昵称
+    private String randomNickname() {
+        StringBuilder suffix = new StringBuilder(6);
+        for (int i = 0; i < 6; i++) {
+            suffix.append(NICKNAME_ALPHABET.charAt(RANDOM.nextInt(NICKNAME_ALPHABET.length())));
+        }
+        return "user_" + suffix;
     }
 
     // 创建会话
@@ -90,10 +103,10 @@ public class MiniAuthService {
     }
 
     // 填充公共字段
-    private void fill(Customer c) {
-        var n = LocalDateTime.now();
-        c.setCreatedAt(n);
-        c.setUpdatedAt(n);
-        c.setDeleted(DeleteStatus.NOT_DELETED);
+    private void fill(Customer customer) {
+        var now = LocalDateTime.now();
+        customer.setCreatedAt(now);
+        customer.setUpdatedAt(now);
+        customer.setDeleted(DeleteStatus.NOT_DELETED);
     }
 }
