@@ -29,6 +29,10 @@ public class AddressService {
                 .stream().map(AddressVO::from).toList();
     }
 
+    public AddressVO get(Long id) {
+        return AddressVO.from(owned(id));
+    }
+
     @Transactional
     public AddressVO create(AddressDTO addressDTO) {
         CustomerAddress customerAddress = new CustomerAddress();
@@ -43,21 +47,18 @@ public class AddressService {
     }
 
     @Transactional
-    public AddressVO update(Long id, AddressDTO r) {
-        CustomerAddress a = owned(id);
-        copy(a, r);
-        a.setUpdatedAt(LocalDateTime.now());
-        if (Boolean.TRUE.equals(r.isDefault())) makeDefault(a);
-        mapper.updateById(a);
-        return AddressVO.from(a);
+    public AddressVO update(Long id, AddressDTO addressDTO) {
+        CustomerAddress customerAddress = owned(id);
+        copy(customerAddress, addressDTO);
+        customerAddress.setUpdatedAt(LocalDateTime.now());
+        if (Boolean.TRUE.equals(addressDTO.isDefault())) makeDefault(customerAddress);
+        mapper.updateById(customerAddress);
+        return AddressVO.from(customerAddress);
     }
 
     @Transactional
     public void remove(Long id) {
-        CustomerAddress a = owned(id);
-        a.setDeleted(DeleteStatus.DELETED);
-        a.setUpdatedAt(LocalDateTime.now());
-        mapper.updateById(a);
+        mapper.deleteById(id);
     }
 
     @Transactional
@@ -68,6 +69,7 @@ public class AddressService {
         return AddressVO.from(a);
     }
 
+    // 校验地址是否属于当前租户和客户
     private CustomerAddress owned(Long id) {
         CustomerAddress customerAddress = mapper.selectOne(query().eq(CustomerAddress::getId, id));
         if (customerAddress == null) throw new BusinessException("地址不存在");

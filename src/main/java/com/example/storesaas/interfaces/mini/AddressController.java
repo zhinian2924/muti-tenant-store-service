@@ -25,6 +25,12 @@ public class AddressController {
         return ApiResponse.ok(service.list());
     }
 
+    @GetMapping("/{id}")
+    public ApiResponse<AddressVO> get(@PathVariable Long id) {
+        CustomerContext.current();
+        return ApiResponse.ok(service.get(id));
+    }
+
     @PostMapping("/add")
     public ApiResponse<AddressVO> create(@Valid @RequestBody AddressDTO addressDTO) {
         CustomerContext.current();
@@ -33,9 +39,9 @@ public class AddressController {
 
     @PutMapping("/{id}")
     public ApiResponse<AddressVO> update(@PathVariable Long id,
-                                         @Valid @RequestBody AddressDTO r) {
+                                         @Valid @RequestBody AddressDTO addressDTO) {
         CustomerContext.current();
-        return ApiResponse.ok(service.update(id, r));
+        return ApiResponse.ok(service.update(id, addressDTO));
     }
 
     @DeleteMapping("/{id}")
