@@ -8,6 +8,7 @@ import com.example.storesaas.platform.web.ApiResponse;
 import com.example.storesaas.platform.error.BusinessException;
 import com.example.storesaas.platform.web.ApiRoutes;
 import com.example.storesaas.identity.api.Permissions;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,12 +20,9 @@ import java.util.Locale;
 
 @RestController
 @RequestMapping(ApiRoutes.STORE_ANALYTICS)
+@RequiredArgsConstructor
 public class SalesAnalyticsController {
     private final SalesAnalyticsService service;
-
-    public SalesAnalyticsController(SalesAnalyticsService service) {
-        this.service = service;
-    }
 
     @SaCheckPermission(Permissions.STATISTICS_VIEW)
     @GetMapping("/sales-overview")

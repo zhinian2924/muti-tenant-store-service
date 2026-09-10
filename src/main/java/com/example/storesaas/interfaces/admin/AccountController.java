@@ -6,6 +6,7 @@ import com.example.storesaas.identity.auth.dto.AccountProfileUpdateDTO;
 import com.example.storesaas.identity.auth.vo.AccountProfileVO;
 import com.example.storesaas.platform.web.ApiResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,12 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AccountController {
     private final AuthService authService;
-
-    public AccountController(AuthService authService) {
-        this.authService = authService;
-    }
 
     @GetMapping("/me")
     public ApiResponse<AccountProfileVO> me() {

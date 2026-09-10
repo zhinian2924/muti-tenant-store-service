@@ -16,6 +16,7 @@ import com.example.storesaas.order.entity.OrderItem;
 import com.example.storesaas.order.entity.StoreOrder;
 import com.example.storesaas.order.domain.OrderRepository;
 import com.example.storesaas.order.application.OrderPricingService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,47 +27,43 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@RequiredArgsConstructor
 public class MiniOrderService {
     private final OrderRepository orderRepository;
     private final OrderPricingService pricingService;
     private final AddressService addresses;
 
-    public MiniOrderService(OrderRepository orderRepository, OrderPricingService pricingService, AddressService a) {
-        this.orderRepository = orderRepository;
-        this.pricingService = pricingService;
-        addresses = a;
-    }
-
-    public OrderPreviewVO preview(MiniOrderDTO r) {
-        Calculation c = calculate(r);
-        BigDecimal deliveryFee = deliveryFee(r);
-        return new OrderPreviewVO(c.items.stream().map(MiniOrderItemVO::from).toList(), c.total,
-                deliveryFee, c.total.add(deliveryFee));
+    public OrderPreviewVO preview(MiniOrderDTO miniOrderDTO) {
+        Calculation calculate = calculate(miniOrderDTO);
+        BigDecimal deliveryFee = deliveryFee(miniOrderDTO);
+        return new OrderPreviewVO(calculate.items.stream().map(MiniOrderItemVO::from).toList(),
+                calculate.total, deliveryFee, calculate.total.add(deliveryFee));
     }
 
     @Transactional
-    public MiniOrderVO create(MiniOrderDTO r) {
-        Calculation c = calculate(r);
-        BigDecimal deliveryFee = deliveryFee(r);
-        StoreOrder o = new StoreOrder();
-        o.setTenantId(CustomerContext.tenantId());
-        o.setCustomerId(CustomerContext.customerId());
-        o.setOrderNo("M" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + ThreadLocalRandom.current().nextInt(1000, 9999));
-        o.setStatus(OrderStatus.PENDING_PAY);
-        o.setTotalAmount(c.total.add(deliveryFee));
-        o.setDeliveryFee(deliveryFee);
-        o.setFulfillmentType(r.fulfillmentType());
-        o.setRemark(r.remark());
-        o.setSource("MINI");
-        o.setAddressSnapshot(snapshot(r));
-        fill(o);
-        orderRepository.saveOrder(o);
-        for (OrderItem i : c.items) {
-            i.setOrderId(o.getId());
+    public MiniOrderVO create(MiniOrderDTO miniOrderDTO) {
+        Calculation calculate = calculate(miniOrderDTO);
+        BigDecimal deliveryFee = deliveryFee(miniOrderDTO);
+        StoreOrder storeOrder = new StoreOrder();
+        storeOrder.setTenantId(CustomerContext.tenantId());
+        storeOrder.setCustomerId(CustomerContext.customerId());
+        storeOrder.setOrderNo("M" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) +
+                ThreadLocalRandom.current().nextInt(1000, 9999));
+        storeOrder.setStatus(OrderStatus.PENDING_PAY);
+        storeOrder.setTotalAmount(calculate.total.add(deliveryFee));
+        storeOrder.setDeliveryFee(deliveryFee);
+        storeOrder.setFulfillmentType(miniOrderDTO.fulfillmentType());
+        storeOrder.setRemark(miniOrderDTO.remark());
+        storeOrder.setSource("MINI");
+        storeOrder.setAddressSnapshot(snapshot(miniOrderDTO));
+        fill(storeOrder);
+        orderRepository.saveOrder(storeOrder);
+        for (OrderItem i : calculate.items) {
+            i.setOrderId(storeOrder.getId());
             fill(i);
             orderRepository.saveItem(i);
         }
-        return MiniOrderVO.from(o);
+        return MiniOrderVO.from(storeOrder);
     }
 
     public List<MiniOrderVO> list() {
@@ -76,59 +73,61 @@ public class MiniOrderService {
     }
 
     public MiniOrderDetailVO detail(Long id) {
-        StoreOrder o = owned(id);
-        List<MiniOrderItemVO> orderItems = orderRepository.findTenantItems(CustomerContext.tenantId(), id)
-                .stream().map(MiniOrderItemVO::from).toList();
-        return new MiniOrderDetailVO(MiniOrderVO.from(o), orderItems);
+        StoreOrder storeOrder = owned(id);
+        List<MiniOrderItemVO> orderItems = orderRepository.findTenantItems(
+                CustomerContext.tenantId(), id).stream().map(MiniOrderItemVO::from).toList();
+        return new MiniOrderDetailVO(MiniOrderVO.from(storeOrder), orderItems);
     }
 
     @Transactional
     public MiniOrderVO cancel(Long id) {
-        StoreOrder o = owned(id);
-        if (!OrderStatus.PENDING_PAY.equals(o.getStatus())) throw new BusinessException("当前订单不可取消");
-        o.setStatus(OrderStatus.CANCELLED);
-        o.setUpdatedAt(LocalDateTime.now());
-        orderRepository.updateOrder(o);
-        return MiniOrderVO.from(o);
+        StoreOrder storeOrder = owned(id);
+        if (!OrderStatus.PENDING_PAY.equals(storeOrder.getStatus())) throw new BusinessException("当前订单不可取消");
+        storeOrder.setStatus(OrderStatus.CANCELLED);
+        storeOrder.setUpdatedAt(LocalDateTime.now());
+        orderRepository.updateOrder(storeOrder);
+        return MiniOrderVO.from(storeOrder);
     }
 
     private StoreOrder owned(Long id) {
-        StoreOrder o = orderRepository.findCustomerOrder(CustomerContext.tenantId(), CustomerContext.customerId(), id);
-        if (o == null) throw new BusinessException("订单不存在");
-        return o;
+        StoreOrder storeOrder = orderRepository.findCustomerOrder(CustomerContext.tenantId(), CustomerContext.customerId(), id);
+        if (storeOrder == null) throw new BusinessException("订单不存在");
+        return storeOrder;
     }
 
-    private Calculation calculate(MiniOrderDTO r) {
+    // 订单计算
+    private Calculation calculate(MiniOrderDTO miniOrderDTO) {
         OrderPricingService.PricingResult pricing = pricingService.price(CustomerContext.tenantId(),
-                r.items().stream().map(x -> new OrderPricingService.OrderLine(x.productId(), x.quantity())).toList());
+                miniOrderDTO.items().stream().map(item -> new OrderPricingService.OrderLine(
+                        item.productId(), item.quantity())).toList());
         return new Calculation(pricing.items(), pricing.total());
     }
 
-    private BigDecimal deliveryFee(MiniOrderDTO r) {
-        if ("DELIVERY".equals(r.fulfillmentType())) {
-            if (r.addressId() == null) throw new BusinessException("配送订单需要地址");
+    private BigDecimal deliveryFee(MiniOrderDTO miniOrderDTO) {
+        if ("DELIVERY".equals(miniOrderDTO.fulfillmentType())) {
+            if (miniOrderDTO.addressId() == null) throw new BusinessException("配送订单需要地址");
             return BigDecimal.valueOf(5);
         }
-        if (!"SELF_PICKUP".equals(r.fulfillmentType())) throw new BusinessException("履约方式不支持");
+        if (!"SELF_PICKUP".equals(miniOrderDTO.fulfillmentType())) throw new BusinessException("履约方式不支持");
         return BigDecimal.ZERO;
     }
 
 
-    private String snapshot(MiniOrderDTO r) {
-        if (r.addressId() == null) return null;
-        AddressVO a = addresses.list().stream().filter(x -> x.id().equals(r.addressId())).findFirst()
+    private String snapshot(MiniOrderDTO miniOrderDTO) {
+        if (miniOrderDTO.addressId() == null) return null;
+        AddressVO addressVO = addresses.list().stream().filter(x -> x.id().equals(miniOrderDTO.addressId())).findFirst()
                 .orElseThrow(() -> new BusinessException("地址不存在"));
-        return a.consignee() + " " + a.phone() + " " + a.province() + a.city() + a.district() + a.detail();
+        return addressVO.consignee() + " " + addressVO.phone() + " " + addressVO.province() + addressVO.city() + addressVO.district() + addressVO.detail();
     }
 
-    private void fill(Object x) {
+    private void fill(Object object) {
         LocalDateTime n = LocalDateTime.now();
-        if (x instanceof StoreOrder o) {
+        if (object instanceof StoreOrder o) {
             o.setCreatedAt(n);
             o.setUpdatedAt(n);
             o.setDeleted(0);
         }
-        if (x instanceof OrderItem i) {
+        if (object instanceof OrderItem i) {
             i.setCreatedAt(n);
             i.setUpdatedAt(n);
             i.setDeleted(0);

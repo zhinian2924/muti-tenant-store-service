@@ -5,6 +5,7 @@ import com.example.storesaas.customer.CustomerContext;
 import com.example.storesaas.miniapp.MiniappConfigService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -13,12 +14,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
  * 拦截器，用于租户访问控制
  */
 @Component
+@RequiredArgsConstructor
 public class MiniCustomerGuardInterceptor implements HandlerInterceptor {
     private final MiniappConfigService configService;
-
-    public MiniCustomerGuardInterceptor(MiniappConfigService configService) {
-        this.configService = configService;
-    }
 
     @Override
     public boolean preHandle(@NotNull HttpServletRequest request,

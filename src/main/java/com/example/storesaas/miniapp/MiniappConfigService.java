@@ -14,22 +14,18 @@ import com.example.storesaas.identity.security.AuthContext;
 import com.example.storesaas.tenant.TenantStatus;
 import com.example.storesaas.tenant.entity.Tenant;
 import com.example.storesaas.tenant.mapper.TenantMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class MiniappConfigService {
     private final MiniappConfigMapper configMapper;
     private final TenantMapper tenantMapper;
     private final SecretCipher secretCipher;
-
-    public MiniappConfigService(MiniappConfigMapper configMapper, TenantMapper tenantMapper, SecretCipher secretCipher) {
-        this.configMapper = configMapper;
-        this.tenantMapper = tenantMapper;
-        this.secretCipher = secretCipher;
-    }
 
     public MiniappConfigVO get(Long tenantId) {
         requirePlatform();

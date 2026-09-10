@@ -8,18 +8,16 @@ import com.example.storesaas.order.vo.MiniOrderDetailVO;
 import com.example.storesaas.order.vo.MiniOrderVO;
 import com.example.storesaas.order.vo.OrderPreviewVO;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/mini/orders")
+@RequiredArgsConstructor
 public class MiniOrderController {
     private final MiniOrderService service;
-
-    public MiniOrderController(MiniOrderService service) {
-        this.service = service;
-    }
 
     @PostMapping("/preview")
     public ApiResponse<OrderPreviewVO> preview(@Valid @RequestBody MiniOrderDTO miniOrderDTO) {

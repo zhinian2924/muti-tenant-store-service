@@ -8,18 +8,16 @@ import com.example.storesaas.customer.mapper.CustomerMapper;
 import com.example.storesaas.customer.vo.CustomerProfileVO;
 import com.example.storesaas.platform.error.BusinessException;
 import com.example.storesaas.platform.persistence.DeleteStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerProfileService {
     private final CustomerMapper customerMapper;
-
-    public CustomerProfileService(CustomerMapper customerMapper) {
-        this.customerMapper = customerMapper;
-    }
 
     public CustomerProfileVO current() {
         return CustomerProfileVO.from(ownedCurrent());

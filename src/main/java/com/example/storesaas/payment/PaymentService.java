@@ -13,6 +13,7 @@ import com.example.storesaas.order.domain.OrderRepository;
 import com.example.storesaas.payment.entity.PaymentOrder;
 import com.example.storesaas.payment.mapper.PaymentOrderMapper;
 import com.example.storesaas.identity.security.AuthContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,17 +21,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentService {
     private final PaymentOrderMapper paymentOrderMapper;
     private final OrderRepository orderRepository;
     private final InventoryReservation inventoryReservation;
-
-    public PaymentService(PaymentOrderMapper paymentOrderMapper, OrderRepository orderRepository,
-                          InventoryReservation inventoryReservation) {
-        this.paymentOrderMapper = paymentOrderMapper;
-        this.orderRepository = orderRepository;
-        this.inventoryReservation = inventoryReservation;
-    }
 
     @Transactional
     public StoreOrder mockPay(Long orderId) {

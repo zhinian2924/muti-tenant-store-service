@@ -8,6 +8,8 @@ import com.example.storesaas.analytics.mapper.SalesAggregateRows.MetricRanges;
 import com.example.storesaas.analytics.mapper.SalesAggregateRows.ProductContributionRow;
 import com.example.storesaas.analytics.vo.SalesOverviewVO;
 import com.example.storesaas.identity.security.AuthContext;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class SalesAnalyticsService {
     private static final BigDecimal ZERO = BigDecimal.ZERO;
     private static final int CONTRIBUTION_LIMIT = 8;
@@ -35,18 +38,15 @@ public class SalesAnalyticsService {
     private static final DateTimeFormatter HOUR_LABEL = DateTimeFormatter.ofPattern("HH:00");
     private static final DateTimeFormatter DATE_LABEL = DateTimeFormatter.ofPattern("M月d日");
 
+    @NonNull
     private final AnalyticsMapper mapper;
+    @NonNull
     private final Clock clock;
     private final SalesTimeWindowFactory windowFactory = new SalesTimeWindowFactory();
 
     @Autowired
     public SalesAnalyticsService(AnalyticsMapper mapper) {
         this(mapper, Clock.system(SalesTimeWindowFactory.ZONE));
-    }
-
-    SalesAnalyticsService(AnalyticsMapper mapper, Clock clock) {
-        this.mapper = Objects.requireNonNull(mapper);
-        this.clock = Objects.requireNonNull(clock);
     }
 
     public SalesOverviewVO overview(SalesPeriod period, LocalDate date) {

@@ -5,6 +5,7 @@ import com.example.storesaas.catalog.api.ProductSnapshot;
 import com.example.storesaas.platform.error.BusinessException;
 import com.example.storesaas.catalog.domain.ProductStatus;
 import com.example.storesaas.order.entity.OrderItem;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -12,12 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class OrderPricingService {
     private final ProductReader productReader;
-
-    public OrderPricingService(ProductReader productReader) {
-        this.productReader = productReader;
-    }
 
     public PricingResult price(Long tenantId, List<OrderLine> lines) {
         BigDecimal total = BigDecimal.ZERO;

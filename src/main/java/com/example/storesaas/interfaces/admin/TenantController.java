@@ -8,6 +8,7 @@ import com.example.storesaas.tenant.dto.TenantUpdateDTO;
 import com.example.storesaas.tenant.dto.TenantStatusDTO;
 import com.example.storesaas.tenant.vo.TenantVO;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,12 +23,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/platform/tenants")
+@RequiredArgsConstructor
 public class TenantController {
     private final TenantService tenantService;
-
-    public TenantController(TenantService tenantService) {
-        this.tenantService = tenantService;
-    }
 
     @SaCheckPermission(Permissions.TENANT_VIEW)
     @GetMapping

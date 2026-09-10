@@ -5,6 +5,7 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.example.storesaas.platform.web.ApiResponse;
 import com.example.storesaas.identity.api.Permissions;
 import com.example.storesaas.order.vo.OrderVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,12 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/store/payments")
+@RequiredArgsConstructor
 public class PaymentController {
     private final PaymentService paymentService;
-
-    public PaymentController(PaymentService paymentService) {
-        this.paymentService = paymentService;
-    }
 
     @SaCheckPermission(Permissions.ORDER_UPDATE)
     @PostMapping("/mock/{orderId}")

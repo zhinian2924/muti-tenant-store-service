@@ -8,16 +8,14 @@ import com.example.storesaas.miniapp.dto.MiniappConfigDTO;
 import com.example.storesaas.miniapp.vo.MiniappConfigVO;
 import com.example.storesaas.miniapp.dto.MiniappConfigStatusDTO;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/platform/tenants/{tenantId}/miniapp-config")
+@RequiredArgsConstructor
 public class MiniappConfigController {
     private final MiniappConfigService service;
-
-    public MiniappConfigController(MiniappConfigService service) {
-        this.service = service;
-    }
 
     @SaCheckPermission(Permissions.TENANT_VIEW)
     @GetMapping

@@ -29,6 +29,7 @@ import com.example.storesaas.identity.user.StaffPermissions;
 import com.example.storesaas.identity.user.StaffRole;
 import com.example.storesaas.identity.user.entity.SysUser;
 import com.example.storesaas.identity.user.mapper.SysUserMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class AuthService {
     private static final Duration SMS_CODE_TTL = Duration.ofMinutes(5);// SMS验证码有效期5分钟
     // 商户管理员权限
@@ -49,14 +51,6 @@ public class AuthService {
     private final StoreMapper storeMapper;
     private final SysUserMapper sysUserMapper;
     private final StringRedisTemplate stringRedisTemplate;
-
-    public AuthService(TenantMapper tenantMapper, StoreMapper storeMapper, SysUserMapper sysUserMapper,
-                       StringRedisTemplate stringRedisTemplate) {
-        this.tenantMapper = tenantMapper;
-        this.storeMapper = storeMapper;
-        this.sysUserMapper = sysUserMapper;
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
 
     @Transactional
     public void registerTenant(RegisterTenantDTO request) {

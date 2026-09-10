@@ -8,6 +8,7 @@ import com.example.storesaas.identity.auth.vo.SmsCodeVO;
 import com.example.storesaas.identity.security.AccountType;
 import com.example.storesaas.platform.web.ApiResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,12 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth/store")
+@RequiredArgsConstructor
 public class StoreAuthController {
     private final AuthService authService;
-
-    public StoreAuthController(AuthService authService) {
-        this.authService = authService;
-    }
 
     @PostMapping("/sms-code")
     public ApiResponse<SmsCodeVO> smsCode(@Valid @RequestBody SmsCodeDTO request) {

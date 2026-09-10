@@ -7,19 +7,16 @@ import com.example.storesaas.order.entity.OrderItem;
 import com.example.storesaas.order.entity.StoreOrder;
 import com.example.storesaas.order.mapper.OrderItemMapper;
 import com.example.storesaas.order.mapper.StoreOrderMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class MyBatisOrderRepository implements OrderRepository {
     private final StoreOrderMapper orderMapper;
     private final OrderItemMapper itemMapper;
-
-    public MyBatisOrderRepository(StoreOrderMapper orderMapper, OrderItemMapper itemMapper) {
-        this.orderMapper = orderMapper;
-        this.itemMapper = itemMapper;
-    }
 
     @Override
     public void saveOrder(StoreOrder order) {

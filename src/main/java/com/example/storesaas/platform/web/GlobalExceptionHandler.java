@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
@@ -32,7 +33,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
     public ApiResponse<Void> handleValidation(Exception ex) {
-        return ApiResponse.fail(ResultCode.VALIDATION_ERROR, "参数校验失败");
+        String details;
+        if (ex instanceof MethodArgumentNotValidException validationException) {
+            details = validationException.getBindingResult().getFieldErrors().stream()
+                    .map(error -> error.getField() + ":" + error.getDefaultMessage())
+                    .collect(Collectors.joining("，"));
+        } else if (ex instanceof BindException bindException) {
+            details = bindException.getBindingResult().getFieldErrors().stream()
+                    .map(error -> error.getField() + ":" + error.getDefaultMessage())
+                    .collect(Collectors.joining("，"));
+        } else {
+            details = "";
+        }
+        return ApiResponse.fail(ResultCode.VALIDATION_ERROR,
+                details.isBlank() ? "参数校验失败" : "参数校验失败：" + details);
     }
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)

@@ -6,6 +6,7 @@ import cn.dev33.satoken.stp.StpInterface;
 import cn.dev33.satoken.stp.StpUtil;
 import com.example.storesaas.platform.web.ApiRoutes;
 import com.example.storesaas.interfaces.mini.MiniCustomerGuardInterceptor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -16,12 +17,9 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class SaTokenConfig implements WebMvcConfigurer {
     private final MiniCustomerGuardInterceptor miniCustomerGuard;
-
-    public SaTokenConfig(MiniCustomerGuardInterceptor miniCustomerGuard) {
-        this.miniCustomerGuard = miniCustomerGuard;
-    }
 
     /**
      * 配置 SaToken 拦截器

@@ -9,16 +9,14 @@ import com.example.storesaas.identity.api.Permissions;
 import com.example.storesaas.inventory.dto.StockAdjustDTO;
 import com.example.storesaas.inventory.vo.InventoryFlowVO;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/store/inventory")
+@RequiredArgsConstructor
 public class InventoryController {
     private final InventoryService inventoryService;
-
-    public InventoryController(InventoryService inventoryService) {
-        this.inventoryService = inventoryService;
-    }
 
     @SaCheckPermission(Permissions.INVENTORY_ADJUST)
     @PostMapping("/adjust")

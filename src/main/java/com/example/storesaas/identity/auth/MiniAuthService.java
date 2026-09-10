@@ -20,6 +20,7 @@ import com.example.storesaas.identity.auth.dto.MockLoginDTO;
 import com.example.storesaas.tenant.TenantStatus;
 import com.example.storesaas.tenant.entity.Tenant;
 import com.example.storesaas.tenant.mapper.TenantMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ import java.util.List;
 import java.security.SecureRandom;
 
 @Service
+@RequiredArgsConstructor
 public class MiniAuthService {
     private static final String NICKNAME_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -35,14 +37,6 @@ public class MiniAuthService {
     private final TenantMapper tenantMapper;
     private final MiniappConfigService configService;
     private final WechatClient wechatClient;
-
-    public MiniAuthService(CustomerMapper customerMapper, TenantMapper tenantMapper,
-                           MiniappConfigService configService, WechatClient wechatClient) {
-        this.customerMapper = customerMapper;
-        this.tenantMapper = tenantMapper;
-        this.configService = configService;
-        this.wechatClient = wechatClient;
-    }
 
     @Transactional
     public MiniLoginVO wechatLogin(WechatLoginDTO request) {

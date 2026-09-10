@@ -8,18 +8,16 @@ import com.example.storesaas.order.dto.CreateOrderDTO;
 import com.example.storesaas.order.vo.OrderItemVO;
 import com.example.storesaas.order.vo.OrderVO;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/store/orders")
+@RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
-
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
 
     @SaCheckPermission(Permissions.ORDER_UPDATE)
     @PostMapping

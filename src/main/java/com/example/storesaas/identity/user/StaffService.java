@@ -11,6 +11,7 @@ import com.example.storesaas.identity.user.vo.StaffVO;
 import com.example.storesaas.identity.user.dto.StaffUpdateDTO;
 import com.example.storesaas.identity.user.entity.SysUser;
 import com.example.storesaas.identity.user.mapper.SysUserMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,12 +20,9 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@RequiredArgsConstructor
 public class StaffService {
     private final SysUserMapper sysUserMapper;
-
-    public StaffService(SysUserMapper sysUserMapper) {
-        this.sysUserMapper = sysUserMapper;
-    }
 
     public List<StaffVO> list() {
         return sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>()

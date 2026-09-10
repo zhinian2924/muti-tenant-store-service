@@ -8,6 +8,7 @@ import com.example.storesaas.catalog.domain.ProductStatus;
 import com.example.storesaas.inventory.api.InventoryReservation;
 import com.example.storesaas.inventory.mapper.InventoryFlowMapper;
 import com.example.storesaas.catalog.mapper.ProductMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,18 +19,11 @@ import java.util.List;
  * 待库存预占表落地后，再将 commit/release 替换为完整生命周期。
  */
 @Service
+@RequiredArgsConstructor
 public class InventoryReservationService implements InventoryReservation {
     private final ProductReader productReader;
     private final ProductMapper productMapper;
     private final InventoryService inventoryService;
-
-    public InventoryReservationService(ProductReader productReader,
-                                       ProductMapper productMapper,
-                                       InventoryService inventoryService) {
-        this.productReader = productReader;
-        this.productMapper = productMapper;
-        this.inventoryService = inventoryService;
-    }
 
     @Override
     @Transactional

@@ -19,22 +19,18 @@ import com.example.storesaas.catalog.vo.ProductVO;
 import com.example.storesaas.catalog.vo.PublicCategoryVO;
 import com.example.storesaas.catalog.vo.PublicProductVO;
 import com.example.storesaas.identity.security.AuthContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService implements ProductReader {
     private final ProductCategoryMapper categoryMapper;
     private final ProductMapper productMapper;
     private final MinioStorageService storageService;
-
-    public ProductService(ProductCategoryMapper categoryMapper, ProductMapper productMapper, MinioStorageService storageService) {
-        this.categoryMapper = categoryMapper;
-        this.productMapper = productMapper;
-        this.storageService = storageService;
-    }
 
     /**
      * 获取商品分类列表

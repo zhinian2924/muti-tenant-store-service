@@ -6,6 +6,7 @@ import com.example.storesaas.identity.auth.vo.LoginVO;
 import com.example.storesaas.identity.security.AccountType;
 import com.example.storesaas.platform.web.ApiResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,12 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth/platform")
+@RequiredArgsConstructor
 public class PlatformAuthController {
     private final AuthService authService;
-
-    public PlatformAuthController(AuthService authService) {
-        this.authService = authService;
-    }
 
     @PostMapping("/login")
     public ApiResponse<LoginVO> login(@Valid @RequestBody LoginDTO request) {

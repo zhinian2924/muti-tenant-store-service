@@ -9,6 +9,7 @@ import com.example.storesaas.identity.user.dto.StaffStatusDTO;
 import com.example.storesaas.identity.user.vo.StaffVO;
 import com.example.storesaas.identity.user.dto.StaffUpdateDTO;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,12 +22,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/store/staff")
+@RequiredArgsConstructor
 public class StaffController {
     private final StaffService staffService;
-
-    public StaffController(StaffService staffService) {
-        this.staffService = staffService;
-    }
 
     @SaCheckPermission(Permissions.STAFF_VIEW)
     @GetMapping

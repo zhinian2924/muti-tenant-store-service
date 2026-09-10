@@ -13,6 +13,7 @@ import com.example.storesaas.order.vo.OrderVO;
 import com.example.storesaas.payment.api.PaymentOrderCreator;
 import com.example.storesaas.payment.api.PaymentChannels;
 import com.example.storesaas.identity.security.AuthContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,16 +24,11 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
     private final PaymentOrderCreator paymentOrderCreator;
     private final OrderPricingService pricingService;
-
-    public OrderService(OrderRepository orderRepository, PaymentOrderCreator paymentOrderCreator, OrderPricingService pricingService) {
-        this.orderRepository = orderRepository;
-        this.paymentOrderCreator = paymentOrderCreator;
-        this.pricingService = pricingService;
-    }
 
     @Transactional
     public OrderVO create(CreateOrderDTO request) {

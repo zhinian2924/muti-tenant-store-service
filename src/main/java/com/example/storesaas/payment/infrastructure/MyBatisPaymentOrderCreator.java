@@ -6,6 +6,7 @@ import com.example.storesaas.payment.domain.PaymentStatus;
 import com.example.storesaas.payment.api.PaymentOrderCreator;
 import com.example.storesaas.payment.entity.PaymentOrder;
 import com.example.storesaas.payment.mapper.PaymentOrderMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,12 +15,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@RequiredArgsConstructor
 public class MyBatisPaymentOrderCreator implements PaymentOrderCreator {
     private final PaymentOrderMapper paymentOrderMapper;
-
-    public MyBatisPaymentOrderCreator(PaymentOrderMapper paymentOrderMapper) {
-        this.paymentOrderMapper = paymentOrderMapper;
-    }
 
     @Override
     public void create(Long tenantId, Long orderId, BigDecimal amount, String channel) {

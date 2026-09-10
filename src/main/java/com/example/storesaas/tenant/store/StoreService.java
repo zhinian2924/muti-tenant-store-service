@@ -12,22 +12,18 @@ import com.example.storesaas.tenant.store.vo.PublicStoreVO;
 import com.example.storesaas.tenant.store.vo.StoreVO;
 import com.example.storesaas.tenant.entity.Tenant;
 import com.example.storesaas.tenant.mapper.TenantMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class StoreService {
     private final StoreMapper storeMapper;
     private final TenantMapper tenantMapper;
     private final MinioStorageService storageService;
-
-    public StoreService(StoreMapper storeMapper, TenantMapper tenantMapper, MinioStorageService storageService) {
-        this.storeMapper = storeMapper;
-        this.tenantMapper = tenantMapper;
-        this.storageService = storageService;
-    }
 
     public StoreVO profile() {
         return StoreVO.from(currentStore());

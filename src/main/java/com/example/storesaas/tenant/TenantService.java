@@ -13,6 +13,7 @@ import com.example.storesaas.tenant.mapper.TenantMapper;
 import com.example.storesaas.tenant.vo.TenantVO;
 import com.example.storesaas.identity.user.entity.SysUser;
 import com.example.storesaas.identity.user.mapper.SysUserMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,16 +21,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class TenantService {
     private final TenantMapper tenantMapper;
     private final StoreMapper storeMapper;
     private final SysUserMapper sysUserMapper;
-
-    public TenantService(TenantMapper tenantMapper, StoreMapper storeMapper, SysUserMapper sysUserMapper) {
-        this.tenantMapper = tenantMapper;
-        this.storeMapper = storeMapper;
-        this.sysUserMapper = sysUserMapper;
-    }
 
     public List<TenantVO> list(Integer status) {
         LambdaQueryWrapper<Tenant> query = new LambdaQueryWrapper<Tenant>()

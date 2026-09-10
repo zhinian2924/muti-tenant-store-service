@@ -13,6 +13,7 @@ import com.example.storesaas.inventory.vo.InventoryFlowVO;
 import com.example.storesaas.catalog.entity.Product;
 import com.example.storesaas.catalog.mapper.ProductMapper;
 import com.example.storesaas.identity.security.AuthContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,14 +23,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class InventoryService {
     private final ProductMapper productMapper;
     private final InventoryFlowMapper flowMapper;
-
-    public InventoryService(ProductMapper productMapper, InventoryFlowMapper flowMapper) {
-        this.productMapper = productMapper;
-        this.flowMapper = flowMapper;
-    }
 
     @Transactional
     public InventoryFlowVO adjust(StockAdjustDTO request) {

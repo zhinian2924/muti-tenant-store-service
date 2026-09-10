@@ -6,18 +6,16 @@ import com.example.storesaas.customer.dto.CartItemDTO;
 import com.example.storesaas.customer.service.CartService;
 import com.example.storesaas.customer.vo.CartItemVO;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/mini/cart")
+@RequiredArgsConstructor
 public class CartController {
     private final CartService service;
-
-    public CartController(CartService service) {
-        this.service = service;
-    }
 
     @GetMapping
     public ApiResponse<List<CartItemVO>> list() {

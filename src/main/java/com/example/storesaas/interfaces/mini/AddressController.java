@@ -6,18 +6,16 @@ import com.example.storesaas.customer.dto.AddressDTO;
 import com.example.storesaas.customer.service.AddressService;
 import com.example.storesaas.customer.vo.AddressVO;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/mini/addresses")
+@RequiredArgsConstructor
 public class AddressController {
     private final AddressService service;
-
-    public AddressController(AddressService service) {
-        this.service = service;
-    }
 
     @GetMapping
     public ApiResponse<List<AddressVO>> list() {

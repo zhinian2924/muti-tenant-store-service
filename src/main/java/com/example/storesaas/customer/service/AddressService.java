@@ -9,6 +9,7 @@ import com.example.storesaas.customer.dto.AddressDTO;
 import com.example.storesaas.customer.entity.CustomerAddress;
 import com.example.storesaas.customer.mapper.CustomerAddressMapper;
 import com.example.storesaas.customer.vo.AddressVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,12 +17,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AddressService {
     private final CustomerAddressMapper mapper;
-
-    public AddressService(CustomerAddressMapper mapper) {
-        this.mapper = mapper;
-    }
 
     public List<AddressVO> list() {
         return mapper.selectList(

@@ -10,19 +10,16 @@ import com.example.storesaas.customer.vo.CustomerProfileVO;
 import com.example.storesaas.identity.auth.vo.MiniCustomerVO;
 import com.example.storesaas.identity.security.AuthContext;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import cn.dev33.satoken.stp.StpUtil;
 
 @RestController
 @RequestMapping("/api/mini/auth")
+@RequiredArgsConstructor
 public class MiniAuthController {
     private final MiniAuthService service;
     private final CustomerProfileService customerProfileService;
-
-    public MiniAuthController(MiniAuthService service, CustomerProfileService customerProfileService) {
-        this.service = service;
-        this.customerProfileService = customerProfileService;
-    }
 
     @PostMapping("/wechat-login")
     public ApiResponse<MiniLoginVO> login(@Valid @RequestBody WechatLoginDTO request) {

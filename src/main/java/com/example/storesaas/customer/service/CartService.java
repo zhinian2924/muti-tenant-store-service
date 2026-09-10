@@ -10,6 +10,7 @@ import com.example.storesaas.customer.mapper.CartItemMapper;
 import com.example.storesaas.customer.vo.CartItemVO;
 import com.example.storesaas.catalog.application.ProductService;
 import com.example.storesaas.catalog.entity.Product;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,14 +18,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CartService {
     private final CartItemMapper mapper;
     private final ProductService products;
-
-    public CartService(CartItemMapper mapper, ProductService products) {
-        this.mapper = mapper;
-        this.products = products;
-    }
 
     public List<CartItemVO> list() {
         Long tenantId = CustomerContext.tenantId();

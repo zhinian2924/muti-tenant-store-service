@@ -5,6 +5,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.example.storesaas.platform.web.ApiResponse;
 import com.example.storesaas.identity.api.Permissions;
 import com.example.storesaas.media.vo.UploadVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,12 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/store/media")
+@RequiredArgsConstructor
 public class MediaController {
     private final MinioStorageService storageService;
-
-    public MediaController(MinioStorageService storageService) {
-        this.storageService = storageService;
-    }
 
     @PostMapping("/images")
     public ApiResponse<UploadVO> upload(
