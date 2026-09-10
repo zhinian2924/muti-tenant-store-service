@@ -34,13 +34,13 @@ public class OrderService {
     public OrderVO create(CreateOrderDTO request) {
         Long tenantId = AuthContext.tenantId();
         OrderPricingService.PricingResult pricing = pricingService.price(tenantId,
-                request.items().stream().map(item -> new OrderPricingService.OrderLine(item.productId(), item.quantity())).toList());
+                request.items().stream()
+                        .map(item -> new OrderPricingService.OrderLine(item.productId(), item.quantity())).toList());
         BigDecimal total = pricing.total();
-
         StoreOrder order = new StoreOrder();
         order.setTenantId(tenantId);
         order.setCustomerId(AuthContext.currentUser().userId());
-        order.setOrderNo(no(OrderNumberRules.PREFIX));
+        order.setOrderNo(no());
         order.setStatus(OrderStatus.PENDING_PAY);
         order.setTotalAmount(total);
         fill(order);
@@ -67,8 +67,8 @@ public class OrderService {
         return orderRepository.findTenantItems(tenantId, orderId).stream().map(OrderItemVO::from).toList();
     }
 
-    private String no(String prefix) {
-        return prefix + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) +
+    private String no() {
+        return OrderNumberRules.PREFIX + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) +
                 ThreadLocalRandom.current().nextInt(OrderNumberRules.RANDOM_MIN, OrderNumberRules.RANDOM_MAX);
     }
 

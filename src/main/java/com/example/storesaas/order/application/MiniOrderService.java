@@ -1,21 +1,22 @@
 package com.example.storesaas.order.application;
 
-import com.example.storesaas.platform.error.BusinessException;
-import com.example.storesaas.platform.persistence.DeleteStatus;
-import com.example.storesaas.order.domain.OrderStatus;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.storesaas.customer.CustomerContext;
-import com.example.storesaas.order.dto.MiniOrderDTO;
-import com.example.storesaas.customer.entity.CustomerAddress;
-import com.example.storesaas.customer.vo.AddressVO;
+import com.example.storesaas.customer.entity.CartItem;
+import com.example.storesaas.customer.mapper.CartItemMapper;
 import com.example.storesaas.customer.service.AddressService;
+import com.example.storesaas.customer.vo.AddressVO;
+import com.example.storesaas.order.domain.OrderRepository;
+import com.example.storesaas.order.domain.OrderStatus;
+import com.example.storesaas.order.dto.MiniOrderDTO;
+import com.example.storesaas.order.entity.OrderItem;
+import com.example.storesaas.order.entity.StoreOrder;
 import com.example.storesaas.order.vo.MiniOrderDetailVO;
 import com.example.storesaas.order.vo.MiniOrderItemVO;
 import com.example.storesaas.order.vo.MiniOrderVO;
 import com.example.storesaas.order.vo.OrderPreviewVO;
-import com.example.storesaas.order.entity.OrderItem;
-import com.example.storesaas.order.entity.StoreOrder;
-import com.example.storesaas.order.domain.OrderRepository;
-import com.example.storesaas.order.application.OrderPricingService;
+import com.example.storesaas.platform.error.BusinessException;
+import com.example.storesaas.platform.persistence.DeleteStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -32,7 +34,9 @@ public class MiniOrderService {
     private final OrderRepository orderRepository;
     private final OrderPricingService pricingService;
     private final AddressService addresses;
+    private final CartItemMapper cartItemMapper;
 
+    // 预览订单
     public OrderPreviewVO preview(MiniOrderDTO miniOrderDTO) {
         Calculation calculate = calculate(miniOrderDTO);
         BigDecimal deliveryFee = deliveryFee(miniOrderDTO);
@@ -42,6 +46,7 @@ public class MiniOrderService {
 
     @Transactional
     public MiniOrderVO create(MiniOrderDTO miniOrderDTO) {
+        validateCart(miniOrderDTO);
         Calculation calculate = calculate(miniOrderDTO);
         BigDecimal deliveryFee = deliveryFee(miniOrderDTO);
         StoreOrder storeOrder = new StoreOrder();
@@ -63,6 +68,7 @@ public class MiniOrderService {
             fill(i);
             orderRepository.saveItem(i);
         }
+        removeSubmittedCartItems(miniOrderDTO);
         return MiniOrderVO.from(storeOrder);
     }
 
@@ -101,6 +107,29 @@ public class MiniOrderService {
                 miniOrderDTO.items().stream().map(item -> new OrderPricingService.OrderLine(
                         item.productId(), item.quantity())).toList());
         return new Calculation(pricing.items(), pricing.total());
+    }
+
+    // 验证购物车
+    private void validateCart(MiniOrderDTO miniOrderDTO) {
+        List<Long> productIds = miniOrderDTO.items().stream().map(MiniOrderDTO.Item::productId).distinct().toList();
+        long cartItemCount = cartItemMapper.selectCount(new LambdaQueryWrapper<CartItem>()
+                .eq(CartItem::getTenantId, CustomerContext.tenantId())
+                .eq(CartItem::getCustomerId, CustomerContext.customerId())
+                .eq(CartItem::getDeleted, DeleteStatus.NOT_DELETED)
+                .in(CartItem::getProductId, productIds));
+        if (cartItemCount != productIds.size()) {
+            throw new BusinessException("购物车商品不存在");
+        }
+    }
+
+    // 移除已提交的购物车商品
+    private void removeSubmittedCartItems(MiniOrderDTO miniOrderDTO) {
+        List<Long> productIds = miniOrderDTO.items().stream().map(MiniOrderDTO.Item::productId).distinct().toList();
+        cartItemMapper.delete(new LambdaQueryWrapper<CartItem>()
+                .eq(CartItem::getTenantId, CustomerContext.tenantId())
+                .eq(CartItem::getCustomerId, CustomerContext.customerId())
+                .eq(CartItem::getDeleted, DeleteStatus.NOT_DELETED)
+                .in(CartItem::getProductId, productIds));
     }
 
     private BigDecimal deliveryFee(MiniOrderDTO miniOrderDTO) {
