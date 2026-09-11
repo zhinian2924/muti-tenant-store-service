@@ -95,6 +95,16 @@ public class MiniOrderService {
         return MiniOrderVO.from(storeOrder);
     }
 
+    @Transactional
+    public MiniOrderVO confirmReceipt(Long id) {
+        StoreOrder storeOrder = owned(id);
+        if (!OrderStatus.PAID.equals(storeOrder.getStatus())) throw new BusinessException("当前订单不可确认收货");
+        storeOrder.setStatus(OrderStatus.COMPLETED);
+        storeOrder.setUpdatedAt(LocalDateTime.now());
+        orderRepository.updateOrder(storeOrder);
+        return MiniOrderVO.from(storeOrder);
+    }
+
     private StoreOrder owned(Long id) {
         StoreOrder storeOrder = orderRepository.findCustomerOrder(CustomerContext.tenantId(), CustomerContext.customerId(), id);
         if (storeOrder == null) throw new BusinessException("订单不存在");

@@ -48,4 +48,10 @@ public class MiniOrderController {
         CustomerContext.current();
         return ApiResponse.ok(service.cancel(id));
     }
+
+    @PostMapping("/{id}/confirm-receipt")
+    public ApiResponse<MiniOrderVO> confirmReceipt(@PathVariable Long id) {
+        CustomerContext.current();
+        return ApiResponse.ok(service.confirmReceipt(id));
+    }
 }

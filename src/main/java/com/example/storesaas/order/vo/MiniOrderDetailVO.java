@@ -2,5 +2,12 @@ package com.example.storesaas.order.vo;
 
 import java.util.List;
 
-public record MiniOrderDetailVO(MiniOrderVO order, List<MiniOrderItemVO> items) {
+/**
+ * 小程序订单详情VO
+ * @param order
+ * @param items
+ */
+public record MiniOrderDetailVO(
+        MiniOrderVO order,
+        List<MiniOrderItemVO> items) {
 }
