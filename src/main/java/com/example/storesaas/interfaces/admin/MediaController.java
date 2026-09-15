@@ -1,6 +1,6 @@
 package com.example.storesaas.interfaces.admin;
 
-import com.example.storesaas.media.MinioStorageService;
+import com.example.storesaas.media.StorageService;
 import cn.dev33.satoken.stp.StpUtil;
 import com.example.storesaas.platform.web.ApiResponse;
 import com.example.storesaas.identity.api.Permissions;
@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/store/media")
 @RequiredArgsConstructor
 public class MediaController {
-    private final MinioStorageService storageService;
+    private final StorageService storageService;
 
     @PostMapping("/images")
     public ApiResponse<UploadVO> upload(

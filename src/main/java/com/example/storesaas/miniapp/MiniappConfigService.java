@@ -1,147 +1,22 @@
 package com.example.storesaas.miniapp;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.example.storesaas.platform.error.BusinessException;
-import com.example.storesaas.platform.model.EnableStatus;
-import com.example.storesaas.platform.persistence.DeleteStatus;
-import com.example.storesaas.platform.error.ResultCode;
 import com.example.storesaas.miniapp.dto.MiniappConfigDTO;
 import com.example.storesaas.miniapp.vo.MiniappConfigVO;
-import com.example.storesaas.miniapp.entity.MiniappConfig;
-import com.example.storesaas.miniapp.mapper.MiniappConfigMapper;
-import com.example.storesaas.identity.security.AccountType;
-import com.example.storesaas.identity.security.AuthContext;
-import com.example.storesaas.tenant.TenantStatus;
 import com.example.storesaas.tenant.entity.Tenant;
-import com.example.storesaas.tenant.mapper.TenantMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+public interface MiniappConfigService {
+    MiniappConfigVO get(Long tenantId);
 
-@Service
-@RequiredArgsConstructor
-public class MiniappConfigService {
-    private final MiniappConfigMapper configMapper;
-    private final TenantMapper tenantMapper;
-    private final SecretCipher secretCipher;
+    MiniappConfigVO save(Long tenantId, MiniappConfigDTO request);
 
-    public MiniappConfigVO get(Long tenantId) {
-        requirePlatform();
-        requireTenant(tenantId, false);
-        MiniappConfig config = findByTenant(tenantId);
-        if (config == null) return new MiniappConfigVO(tenantId, null, false, null, null, null);
-        return response(config);
-    }
+    MiniappConfigVO setStatus(Long tenantId, Integer status);
 
-    @Transactional
-    public MiniappConfigVO save(Long tenantId, MiniappConfigDTO request) {
-        Long operatorId = requirePlatform();
-        requireTenant(tenantId, false);
-        String appId = request.appId().trim();
-        MiniappConfig duplicate = configMapper.selectOne(new LambdaQueryWrapper<MiniappConfig>()
-                .eq(MiniappConfig::getAppId, appId)
-                .eq(MiniappConfig::getDeleted, DeleteStatus.NOT_DELETED)
-                .ne(MiniappConfig::getTenantId, tenantId));
-        if (duplicate != null) throw new BusinessException(ResultCode.CONFLICT, "该AppID已绑定其他租户");
+    ActiveMiniapp requireActiveByAppId(String appId);
 
-        MiniappConfig config = findByTenant(tenantId);
-        LocalDateTime now = LocalDateTime.now();
-        String secret = request.appSecret() == null ? "" : request.appSecret().trim();
-        if (config == null) {
-            if (secret.isEmpty()) throw new BusinessException("首次配置必须填写AppSecret");
-            config = new MiniappConfig();
-            config.setTenantId(tenantId);
-            config.setStatus(EnableStatus.ENABLED);
-            config.setCreatedBy(operatorId);
-            config.setCreatedAt(now);
-            config.setDeleted(DeleteStatus.NOT_DELETED);
-        }
-        config.setAppId(appId);
-        if (!secret.isEmpty()) config.setAppSecretCiphertext(secretCipher.encrypt(secret));
-        config.setUpdatedBy(operatorId);
-        config.setUpdatedAt(now);
-        if (config.getId() == null) configMapper.insert(config); else configMapper.updateById(config);
-        return response(config);
-    }
+    Long requireActiveTenantIdByAppId(String appId);
 
-    @Transactional
-    public MiniappConfigVO setStatus(Long tenantId, Integer status) {
-        Long operatorId = requirePlatform();
-        if (!Integer.valueOf(EnableStatus.ENABLED).equals(status)
-                && !Integer.valueOf(EnableStatus.DISABLED).equals(status)) {
-            throw new BusinessException("小程序配置状态不合法");
-        }
-        MiniappConfig config = findByTenant(tenantId);
-        if (config == null) throw new BusinessException("请先配置小程序AppID和AppSecret");
-        config.setStatus(status);
-        config.setUpdatedBy(operatorId);
-        config.setUpdatedAt(LocalDateTime.now());
-        configMapper.updateById(config);
-        return response(config);
-    }
+    void requireActiveTenantAccess(Long tenantId);
 
-    public ActiveMiniapp requireActiveByAppId(String appId) {
-        MiniappConfig config = activeConfig(appId);
-        Tenant tenant = requireTenant(config.getTenantId(), true);
-        return new ActiveMiniapp(config.getTenantId(), config.getAppId(),
-                secretCipher.decrypt(config.getAppSecretCiphertext()), tenant);
-    }
-
-    public Long requireActiveTenantIdByAppId(String appId) {
-        return activeConfig(appId).getTenantId();
-    }
-
-    public void requireActiveTenantAccess(Long tenantId) {
-        requireTenant(tenantId, true);
-        MiniappConfig config = findByTenant(tenantId);
-        if (config == null || !Integer.valueOf(EnableStatus.ENABLED).equals(config.getStatus())) {
-            throw new BusinessException(ResultCode.FORBIDDEN, "小程序未配置或已停用");
-        }
-    }
-
-    private MiniappConfig activeConfig(String appId) {
-        if (appId == null || appId.isBlank()) throw new BusinessException("缺少小程序AppID");
-        MiniappConfig config = configMapper.selectOne(new LambdaQueryWrapper<MiniappConfig>()
-                .eq(MiniappConfig::getAppId, appId.trim())
-                .eq(MiniappConfig::getStatus, EnableStatus.ENABLED)
-                .eq(MiniappConfig::getDeleted, DeleteStatus.NOT_DELETED));
-        if (config == null) throw new BusinessException(ResultCode.FORBIDDEN, "小程序未配置或已停用");
-        requireTenant(config.getTenantId(), true);
-        return config;
-    }
-
-    private MiniappConfig findByTenant(Long tenantId) {
-        return configMapper.selectOne(new LambdaQueryWrapper<MiniappConfig>()
-                .eq(MiniappConfig::getTenantId, tenantId)
-                .eq(MiniappConfig::getDeleted, DeleteStatus.NOT_DELETED));
-    }
-
-    private Tenant requireTenant(Long tenantId, boolean requireActive) {
-        Tenant tenant = tenantMapper.selectOne(new LambdaQueryWrapper<Tenant>()
-                .eq(Tenant::getId, tenantId).eq(Tenant::getDeleted, DeleteStatus.NOT_DELETED));
-        if (tenant == null) throw new BusinessException("租户不存在");
-        if (requireActive && !Integer.valueOf(TenantStatus.ACTIVE).equals(tenant.getStatus())) {
-            throw new BusinessException(ResultCode.FORBIDDEN, "租户未启用");
-        }
-        return tenant;
-    }
-
-    private Long requirePlatform() {
-        var user = AuthContext.currentUser();
-        if (user.accountType() != AccountType.PLATFORM) {
-            throw new BusinessException(ResultCode.FORBIDDEN, "仅平台账号可管理小程序配置");
-        }
-        return user.userId();
-    }
-
-    private MiniappConfigVO response(MiniappConfig config) {
-        return new MiniappConfigVO(config.getTenantId(), config.getAppId(),
-                config.getAppSecretCiphertext() != null && !config.getAppSecretCiphertext().isBlank(),
-                config.getStatus(), config.getUpdatedBy(), config.getUpdatedAt());
-    }
-
-    public record ActiveMiniapp(Long tenantId, String appId, String appSecret, Tenant tenant) {
+    record ActiveMiniapp(Long tenantId, String appId, String appSecret, Tenant tenant) {
     }
 }

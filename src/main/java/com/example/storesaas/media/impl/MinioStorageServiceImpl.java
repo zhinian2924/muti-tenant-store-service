@@ -1,4 +1,6 @@
-package com.example.storesaas.media;
+package com.example.storesaas.media.impl;
+
+import com.example.storesaas.media.*;
 
 import com.example.storesaas.platform.error.BusinessException;
 import com.example.storesaas.identity.security.AuthContext;
@@ -14,7 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-public class MinioStorageService {
+public class MinioStorageServiceImpl implements StorageService {
     private static final long MAX_SIZE = 5 * 1024 * 1024;
     private static final Map<String, String> CONTENT_TYPES = Map.of(
             "image/jpeg", "jpg",

@@ -1,135 +1,17 @@
 package com.example.storesaas.identity.user;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.example.storesaas.platform.error.BusinessException;
-import com.example.storesaas.platform.model.EnableStatus;
-import com.example.storesaas.platform.persistence.DeleteStatus;
-import com.example.storesaas.identity.security.AccountType;
-import com.example.storesaas.identity.security.AuthContext;
 import com.example.storesaas.identity.user.dto.StaffCreateDTO;
 import com.example.storesaas.identity.user.vo.StaffVO;
 import com.example.storesaas.identity.user.dto.StaffUpdateDTO;
-import com.example.storesaas.identity.user.entity.SysUser;
-import com.example.storesaas.identity.user.mapper.SysUserMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
-@Service
-@RequiredArgsConstructor
-public class StaffService {
-    private final SysUserMapper sysUserMapper;
+public interface StaffService {
+    List<StaffVO> list();
 
-    public List<StaffVO> list() {
-        return sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>()
-                        .eq(SysUser::getTenantId, AuthContext.tenantId())
-                        .eq(SysUser::getAccountType, AccountType.STORE.name())
-                        .ne(SysUser::getStaffRole, StaffRole.OWNER.name())
-                        .eq(SysUser::getDeleted, DeleteStatus.NOT_DELETED)
-                        .orderByDesc(SysUser::getCreatedAt))
-                .stream()
-                .map(StaffVO::from)
-                .toList();
-    }
+    StaffVO create(StaffCreateDTO request);
 
-    @Transactional
-    public StaffVO create(StaffCreateDTO request) {
-        ensureOwner();
-        Long count = sysUserMapper.selectCount(new LambdaQueryWrapper<SysUser>()
-                .eq(SysUser::getAccountType, AccountType.STORE.name())
-                .eq(SysUser::getMobile, request.mobile())
-                .eq(SysUser::getDeleted, DeleteStatus.NOT_DELETED));
-        if (count > 0) {
-            throw new BusinessException("手机号已被门店账号使用");
-        }
+    StaffVO update(Long id, StaffUpdateDTO request);
 
-        LocalDateTime now = LocalDateTime.now();
-        StaffRole role = staffRole(request.staffRole());
-        SysUser user = new SysUser();
-        user.setTenantId(AuthContext.tenantId());
-        user.setUsername("staff_" + user.getTenantId() + "_" + ThreadLocalRandom.current().nextInt(100000, 999999));
-        user.setMobile(request.mobile());
-        user.setPassword(request.password());
-        user.setNickname(hasText(request.nickname()) ? request.nickname().trim() : "店员");
-        user.setAccountType(AccountType.STORE.name());
-        user.setStaffRole(role.name());
-        user.setPermissions(StaffPermissions.joinGrantable(request.permissions()));
-        user.setStatus(EnableStatus.ENABLED);
-        user.setCreatedAt(now);
-        user.setUpdatedAt(now);
-        user.setDeleted(DeleteStatus.NOT_DELETED);
-        sysUserMapper.insert(user);
-        return StaffVO.from(user);
-    }
-
-    @Transactional
-    public StaffVO update(Long id, StaffUpdateDTO request) {
-        ensureOwner();
-        SysUser user = staff(id);
-        StaffRole role = staffRole(request.staffRole());
-        if (hasText(request.password())) {
-            user.setPassword(request.password());
-        }
-        if (request.nickname() != null) {
-            user.setNickname(request.nickname().trim());
-        }
-        user.setStaffRole(role.name());
-        user.setPermissions(StaffPermissions.joinGrantable(request.permissions()));
-        if (request.status() != null) {
-            user.setStatus(Integer.valueOf(EnableStatus.DISABLED).equals(request.status()) ? EnableStatus.DISABLED : EnableStatus.ENABLED);
-        }
-        user.setUpdatedAt(LocalDateTime.now());
-        sysUserMapper.updateById(user);
-        return StaffVO.from(user);
-    }
-
-    @Transactional
-    public StaffVO setStatus(Long id, Integer status) {
-        ensureOwner();
-        SysUser user = staff(id);
-        user.setStatus(Integer.valueOf(EnableStatus.DISABLED).equals(status) ? EnableStatus.DISABLED : EnableStatus.ENABLED);
-        user.setUpdatedAt(LocalDateTime.now());
-        sysUserMapper.updateById(user);
-        return StaffVO.from(user);
-    }
-
-    private SysUser staff(Long id) {
-        SysUser user = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-                .eq(SysUser::getId, id)
-                .eq(SysUser::getTenantId, AuthContext.tenantId())
-                .eq(SysUser::getAccountType, AccountType.STORE.name())
-                .eq(SysUser::getDeleted, DeleteStatus.NOT_DELETED)
-                .last("limit 1"));
-        if (user == null || StaffPermissions.isOwner(user.getStaffRole())) {
-            throw new BusinessException("员工不存在");
-        }
-        return user;
-    }
-
-    private void ensureOwner() {
-        if (!StaffPermissions.isOwner(AuthContext.currentUser().staffRole())) {
-            throw new BusinessException("只有店主可以管理员工");
-        }
-    }
-
-    private StaffRole staffRole(String role) {
-        StaffRole staffRole;
-        try {
-            staffRole = StaffRole.valueOf(role);
-        } catch (IllegalArgumentException | NullPointerException ignored) {
-            throw new BusinessException("员工岗位不正确");
-        }
-        if (staffRole == StaffRole.OWNER) {
-            throw new BusinessException("员工不能设置为店主");
-        }
-        return staffRole;
-    }
-
-    private boolean hasText(String value) {
-        return value != null && !value.trim().isEmpty();
-    }
+    StaffVO setStatus(Long id, Integer status);
 }

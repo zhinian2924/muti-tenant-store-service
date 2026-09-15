@@ -1,0 +1,218 @@
+package com.example.storesaas.catalog.application.impl;
+
+import com.example.storesaas.catalog.application.*;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.storesaas.platform.error.BusinessException;
+import com.example.storesaas.platform.model.EnableStatus;
+import com.example.storesaas.platform.persistence.DeleteStatus;
+import com.example.storesaas.catalog.domain.ProductStatus;
+import com.example.storesaas.catalog.api.ProductReader;
+import com.example.storesaas.catalog.api.ProductSnapshot;
+import com.example.storesaas.media.StorageService;
+import com.example.storesaas.catalog.dto.CategoryDTO;
+import com.example.storesaas.catalog.dto.ProductDTO;
+import com.example.storesaas.catalog.entity.Product;
+import com.example.storesaas.catalog.entity.ProductCategory;
+import com.example.storesaas.catalog.mapper.ProductCategoryMapper;
+import com.example.storesaas.catalog.mapper.ProductMapper;
+import com.example.storesaas.catalog.vo.CategoryVO;
+import com.example.storesaas.catalog.vo.ProductVO;
+import com.example.storesaas.catalog.vo.PublicCategoryVO;
+import com.example.storesaas.catalog.vo.PublicProductVO;
+import com.example.storesaas.identity.security.AuthContext;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ProductServiceImpl implements ProductService, ProductReader {
+    private final ProductCategoryMapper categoryMapper;
+    private final ProductMapper productMapper;
+    private final StorageService storageService;
+
+    /**
+     * 获取商品分类列表
+     * @return 商品分类列表
+     */
+    public List<CategoryVO> categories() {
+        Long tenantId = AuthContext.tenantId();
+        return categoryMapper.selectList(new LambdaQueryWrapper<ProductCategory>()
+                .eq(ProductCategory::getTenantId, tenantId)
+                .eq(ProductCategory::getDeleted, DeleteStatus.NOT_DELETED)
+                .orderByAsc(ProductCategory::getSortNo)).stream().map(CategoryVO::from).toList();
+    }
+
+    public List<PublicCategoryVO> publicCategories(Long tenantId) {
+        return categoryMapper.selectList(new LambdaQueryWrapper<ProductCategory>()
+                .eq(ProductCategory::getTenantId, tenantId)
+                .eq(ProductCategory::getStatus, EnableStatus.ENABLED)
+                .eq(ProductCategory::getDeleted, DeleteStatus.NOT_DELETED)
+                .orderByAsc(ProductCategory::getSortNo))
+                .stream()
+                .map(PublicCategoryVO::from)
+                .toList();
+    }
+
+    /**
+     * 创建分类
+     * @param request 分类请求
+     * @return 商品分类
+     */
+    public CategoryVO createCategory(CategoryDTO request) {
+        ProductCategory category = new ProductCategory();
+        category.setTenantId(AuthContext.tenantId());
+        category.setName(request.name());
+        category.setSortNo(request.sortNo() == null ? 0 : request.sortNo());
+        category.setStatus(request.status() == null ? EnableStatus.ENABLED : request.status());
+        fillCreate(category);
+        categoryMapper.insert(category);
+        return CategoryVO.from(category);
+    }
+
+    /**
+     * 获取商品列表
+     * @return 商品列表
+     */
+    public List<ProductVO> products() {
+        Long tenantId = AuthContext.tenantId();
+        return productMapper.selectList(new LambdaQueryWrapper<Product>()
+                .eq(Product::getTenantId, tenantId)
+                .eq(Product::getDeleted, DeleteStatus.NOT_DELETED)
+                .orderByDesc(Product::getId)).stream().map(ProductVO::from).toList();
+    }
+
+    public List<PublicProductVO> publicProducts(Long tenantId, Long categoryId) {
+        var query = new LambdaQueryWrapper<Product>()
+                .eq(Product::getTenantId, tenantId)
+                .eq(Product::getStatus, ProductStatus.ON_SALE)
+                .gt(Product::getStock, 0)
+                .eq(Product::getDeleted, DeleteStatus.NOT_DELETED);
+        if (categoryId != null) {
+            query.eq(Product::getCategoryId, categoryId);
+        }
+        return productMapper.selectList(query)
+                .stream()
+                .map(PublicProductVO::from)
+                .toList();
+    }
+
+    public ProductVO createProduct(ProductDTO request) {
+        Product product = new Product();
+        product.setTenantId(AuthContext.tenantId());
+        product.setCategoryId(request.categoryId());
+        product.setName(request.name());
+        product.setImageUrl(request.imageUrl());
+        product.setPrice(request.price());
+        product.setStock(request.stock() == null ? 0 : request.stock());
+        product.setStatus(normalizeProductStatus(request.status(), product.getStock()));
+        fillCreate(product);
+        productMapper.insert(product);
+        return ProductVO.from(product);
+    }
+
+    public ProductVO updateProduct(Long id, ProductDTO request) {
+        Product product = tenantProduct(AuthContext.tenantId(), id);
+        String oldImageUrl = product.getImageUrl();
+        product.setCategoryId(request.categoryId());
+        product.setName(request.name());
+        product.setImageUrl(request.imageUrl());
+        product.setPrice(request.price());
+        product.setStatus(normalizeProductStatus(request.status(), product.getStock()));
+        product.setUpdatedAt(LocalDateTime.now());
+        productMapper.updateById(product);
+        if (!java.util.Objects.equals(oldImageUrl, request.imageUrl())) {
+            storageService.deleteUrl(oldImageUrl);
+        }
+        return ProductVO.from(product);
+    }
+
+    public ProductVO setProductStatus(Long id, Integer status) {
+        Product product = tenantProduct(AuthContext.tenantId(), id);
+        product.setStatus(normalizeProductStatus(status, product.getStock()));
+        product.setUpdatedAt(LocalDateTime.now());
+        productMapper.updateById(product);
+        return ProductVO.from(product);
+    }
+
+    public CategoryVO setCategoryStatus(Long id, Integer status) {
+        Long tenantId = AuthContext.tenantId();
+        ProductCategory category = categoryMapper.selectOne(new LambdaQueryWrapper<ProductCategory>()
+                .eq(ProductCategory::getTenantId, tenantId)
+                .eq(ProductCategory::getId, id)
+                .eq(ProductCategory::getDeleted, DeleteStatus.NOT_DELETED));
+        if (category == null) {
+            throw new BusinessException("分类不存在");
+        }
+        int nextStatus = Integer.valueOf(EnableStatus.DISABLED).equals(status) ? EnableStatus.DISABLED : EnableStatus.ENABLED;
+        category.setStatus(nextStatus);
+        category.setUpdatedAt(LocalDateTime.now());
+        categoryMapper.updateById(category);
+        if (nextStatus == EnableStatus.DISABLED) {
+            productMapper.stopByCategory(tenantId, id);
+        }
+        return CategoryVO.from(category);
+    }
+
+    public void deleteProduct(Long id) {
+        Product product = tenantProduct(AuthContext.tenantId(), id);
+        productMapper.deleteById(product.getId());
+        storageService.deleteUrl(product.getImageUrl());
+    }
+
+    // 根据租户和商品ID获取商品
+    public Product tenantProduct(Long tenantId, Long productId) {
+        Product product = productMapper.selectOne(new LambdaQueryWrapper<Product>()
+                .eq(Product::getTenantId, tenantId)
+                .eq(Product::getId, productId)
+                .eq(Product::getDeleted, DeleteStatus.NOT_DELETED));
+        if (product == null) {
+            throw new BusinessException("商品不存在");
+        }
+        return product;
+    }
+
+    // 根据租户和商品ID获取商品快照
+    @Override
+    public ProductSnapshot getTenantProduct(Long tenantId, Long productId) {
+        Product product = tenantProduct(tenantId, productId);
+        return new ProductSnapshot(
+                product.getId(),
+                product.getTenantId(),
+                product.getName(),
+                product.getImageUrl(),
+                product.getPrice(),
+                product.getStock(),
+                product.getStatus()
+        );
+    }
+
+    // 规范商品状态
+    private int normalizeProductStatus(Integer status, Integer stock) {
+        int nextStatus = status == null ? ProductStatus.ON_SALE : status;
+        if (!ProductStatus.valid(nextStatus)) {
+            throw new BusinessException("商品状态不支持");
+        }
+        if (nextStatus == ProductStatus.ON_SALE && (stock == null || stock <= 0)) {
+            return ProductStatus.SOLD_OUT;
+        }
+        return nextStatus;
+    }
+
+    private void fillCreate(Object entity) {
+        LocalDateTime now = LocalDateTime.now();
+        if (entity instanceof ProductCategory category) {
+            category.setCreatedAt(now);
+            category.setUpdatedAt(now);
+            category.setDeleted(DeleteStatus.NOT_DELETED);
+        }
+        if (entity instanceof Product product) {
+            product.setCreatedAt(now);
+            product.setUpdatedAt(now);
+            product.setDeleted(DeleteStatus.NOT_DELETED);
+        }
+    }
+}

@@ -1,5 +1,7 @@
 package com.example.storesaas.analytics;
 
+import com.example.storesaas.analytics.impl.SalesAnalyticsServiceImpl;
+
 import com.example.storesaas.analytics.mapper.AnalyticsMapper;
 import com.example.storesaas.analytics.mapper.SalesAggregateRows.AmountBucket;
 import com.example.storesaas.analytics.mapper.SalesAggregateRows.MetricAmounts;
@@ -32,7 +34,7 @@ class SalesAnalyticsServiceTest {
     void springContextUsesProductionConstructor() {
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
             context.registerBean(AnalyticsMapper.class, () -> mock(AnalyticsMapper.class));
-            context.register(SalesAnalyticsService.class);
+            context.register(SalesAnalyticsServiceImpl.class);
             context.refresh();
 
             assertNotNull(context.getBean(SalesAnalyticsService.class));
@@ -58,7 +60,7 @@ class SalesAnalyticsServiceTest {
         SalesOverviewVO result;
         try (MockedStatic<AuthContext> auth = mockStatic(AuthContext.class)) {
             auth.when(AuthContext::tenantId).thenReturn(42L);
-            result = new SalesAnalyticsService(mapper, CLOCK).overview(SalesPeriod.DAY, null);
+            result = new SalesAnalyticsServiceImpl(mapper, CLOCK).overview(SalesPeriod.DAY, null);
         }
 
         assertEquals("CNY", result.currency());
@@ -99,7 +101,7 @@ class SalesAnalyticsServiceTest {
         SalesOverviewVO result;
         try (MockedStatic<AuthContext> auth = mockStatic(AuthContext.class)) {
             auth.when(AuthContext::tenantId).thenReturn(7L);
-            result = new SalesAnalyticsService(mapper, CLOCK)
+            result = new SalesAnalyticsServiceImpl(mapper, CLOCK)
                     .overview(SalesPeriod.MONTH, LocalDate.of(2025, 5, 20));
         }
 

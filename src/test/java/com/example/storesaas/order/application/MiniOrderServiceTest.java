@@ -1,5 +1,7 @@
 package com.example.storesaas.order.application;
 
+import com.example.storesaas.order.application.impl.MiniOrderServiceImpl;
+
 import com.example.storesaas.customer.CustomerContext;
 import com.example.storesaas.customer.mapper.CartItemMapper;
 import com.example.storesaas.customer.service.AddressService;
@@ -58,7 +60,7 @@ class MiniOrderServiceTest {
     }
 
     private MiniOrderService service(OrderRepository orderRepository) {
-        return new MiniOrderService(
+        return new MiniOrderServiceImpl(
                 orderRepository,
                 mock(OrderPricingService.class),
                 mock(AddressService.class),

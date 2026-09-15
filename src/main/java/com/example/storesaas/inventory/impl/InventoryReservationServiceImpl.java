@@ -1,4 +1,6 @@
-package com.example.storesaas.inventory;
+package com.example.storesaas.inventory.impl;
+
+import com.example.storesaas.inventory.*;
 
 import com.example.storesaas.catalog.api.ProductReader;
 import com.example.storesaas.catalog.api.ProductSnapshot;
@@ -20,7 +22,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
-public class InventoryReservationService implements InventoryReservation {
+public class InventoryReservationServiceImpl implements InventoryReservation {
     private final ProductReader productReader;
     private final ProductMapper productMapper;
     private final InventoryService inventoryService;
